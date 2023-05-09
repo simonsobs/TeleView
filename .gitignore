@@ -1,3 +1,6 @@
+# custom ignored items for the TeleView repo
+test_data
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
