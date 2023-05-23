@@ -6,7 +6,43 @@ from tvapi.settings import BASE_DIR
 
 expected_results_dir_names = {'outputs', 'plots'}
 
-all_found_acquisition_types = set()
+known_actions_types = {
+    'analyze_iv_from_file',
+    'analyze_slow_iv_from_file',
+    'analyze_tickle_data',
+    'atten_optimization',
+    'estimate_phase_delay',
+    'find_freq',
+    'find_peak',
+    'fixed_tone_profile',
+    'fixed_tone_profile_sweep',
+    'full_band_resp',
+    'optimize_attens',
+    'optimize_band_atten',
+    'plot_find_freq',
+    'plot_squid_curves',
+    'plot_tune_summary',
+    'read_adc_data',
+    'read_dac_data',
+    'relock_tracking_setup',
+    'setup_phase_delay',
+    'setup_tracking_params',
+    'setup_tune',
+    'slow_iv_all',
+    'take_bgmap',
+    'take_complex_impedance',
+    'take_iv',
+    'take_noise',
+    'take_noise_psd',
+    'tracking_quality',
+    'tracking_setup',
+    'tracking_setup_mult_bands',
+    'uxm_relock',
+    'uxm_setup',
+    'None',
+}
+
+all_found_action_types = set()
 
 
 def get_time_dirs(parent_dir: str) -> List[int]:
@@ -24,17 +60,17 @@ def parse_ufm_name(ufm_dir: str) -> Tuple[str, int]:
     return ufm_letter, int(ufm_number_str)
 
 
-def parse_acquisition_name(acquisition_dir: str) -> Tuple[Union[int, None], str]:
-    time_stamp_str, acquisition_type = acquisition_dir.split('_', 1)
+def parse_action_name(action_dir: str) -> Tuple[Union[int, None], str]:
+    time_stamp_str, action_type = action_dir.split('_', 1)
     if time_stamp_str.lower().strip() == 'none':
         time_stamp = None
     else:
         time_stamp = int(time_stamp_str)
-    return time_stamp, acquisition_type
+    return time_stamp, action_type
 
 
 def get_results_files(parent_dir: str) -> Dict[str, List[str]]:
-    # the only expected dir inside the acquisition dir is 'outputs'
+    # the only expected dir inside the action dir is 'outputs'
     found_dirs = set()
     data_files_by_type = {}
     for output_dir in os.listdir(parent_dir):
@@ -53,10 +89,13 @@ class SmurfDataLocation(NamedTuple):
     time_stamp: Union[int, None]
     ufm_letter: str
     ufm_number: int
-    acquisition_type: str
+    action_type: str
     full_path: str
     outputs: Optional[List[str]] = None
     plots: Optional[List[str]] = None
+
+    def to_dict(self) -> Dict[str, Union[int, str, List[str], None]]:
+        return {field: getattr(self, field) for field in self._fields}
 
 
 data_scraper_functions = {}
@@ -77,18 +116,18 @@ def smurf(smurf_data_path: str, verbose: bool = False):
         for ufm_dir in get_ufm_dirs(parent_dir=full_path_course_time_dir):
             ufm_letter, ufm_number = parse_ufm_name(ufm_dir)
             full_path_ufm_dir = os.path.join(full_path_course_time_dir, ufm_dir)
-            for acquisition_dir in os.listdir(full_path_ufm_dir):
-                full_path_acquisition_dir = os.path.join(full_path_ufm_dir, acquisition_dir)
-                time_stamp_int, acquisition_type = parse_acquisition_name(acquisition_dir)
-                data_files_by_type = get_results_files(parent_dir=full_path_acquisition_dir)
-                all_found_acquisition_types.add(acquisition_type)
+            for action_dir in os.listdir(full_path_ufm_dir):
+                full_path_action_dir = os.path.join(full_path_ufm_dir, action_dir)
+                time_stamp_int, action_type = parse_action_name(action_dir)
+                data_files_by_type = get_results_files(parent_dir=full_path_action_dir)
+                all_found_action_types.add(action_type)
                 yield SmurfDataLocation(
                     time_stamp_course=course_time_int,
                     time_stamp=time_stamp_int,
                     ufm_letter=ufm_letter,
                     ufm_number=ufm_number,
-                    acquisition_type=acquisition_type,
-                    full_path=full_path_acquisition_dir,
+                    action_type=action_type,
+                    full_path=full_path_action_dir,
                     outputs=data_files_by_type['outputs'],
                     plots=data_files_by_type['plots'],
                 )
@@ -108,15 +147,17 @@ def get_level3_data_dirs(verbose:  bool = False) -> List[str]:
     return level3_data_dirs
 
 
-def find_data(level3_data_dir: str, verbose: bool = False) -> Dict[str, List[str]]:
+def find_data(level3_data_dir: str, verbose: bool = False, generator_mode: bool = True) -> Dict[str, List[str]]:
     data_locations_single_dir = {}
     for possible_dir in os.listdir(level3_data_dir):
         # only parse directories that are in the data_scraper_functions dictionary
         dir_str = possible_dir.lower()
         full_dir_path = os.path.join(level3_data_dir, possible_dir)
         if os.path.isdir(full_dir_path) and dir_str in data_scraper_functions.keys():
-            # data_locations_this_dir = data_scraper_functions[dir_str](full_dir_path, verbose=verbose)
-            data_locations_this_dir = list(data_scraper_functions[dir_str](full_dir_path, verbose=verbose))
+            if generator_mode:
+                data_locations_this_dir = data_scraper_functions[dir_str](full_dir_path, verbose=verbose)
+            else:
+                data_locations_this_dir = list(data_scraper_functions[dir_str](full_dir_path, verbose=verbose))
             if dir_str in data_locations_single_dir.keys():
                 data_locations_single_dir[dir_str].extend(data_locations_this_dir)
             else:
@@ -124,10 +165,11 @@ def find_data(level3_data_dir: str, verbose: bool = False) -> Dict[str, List[str
     return data_locations_single_dir
 
 
-def find_all_data(verbose: bool = False) -> Dict[str, List[str]]:
+def find_all_data(verbose: bool = False, generator_mode: bool = True) -> Dict[str, List[SmurfDataLocation]]:
     data_locations_all = {}
     for level3_data_dir in get_level3_data_dirs(verbose=verbose):
-        data_locations_single_dir = find_data(level3_data_dir=level3_data_dir, verbose=verbose)
+        data_locations_single_dir = find_data(level3_data_dir=level3_data_dir, verbose=verbose,
+                                              generator_mode=generator_mode)
         for dir_str, data_locations_this_dir in data_locations_single_dir.items():
             if dir_str in data_locations_all.keys():
                 data_locations_all[dir_str].extend(data_locations_this_dir)
@@ -137,5 +179,4 @@ def find_all_data(verbose: bool = False) -> Dict[str, List[str]]:
 
 
 if __name__ == '__main__':
-    data_locations_all_test = find_all_data(verbose=True)
-
+    data_locations_all_test = find_all_data(verbose=True, generator_mode=False)

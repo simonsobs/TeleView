@@ -54,6 +54,12 @@ class MongoOperate(MongoConnection):
         if self.verbose:
             print('Test data initialized.')
 
+    def collection_add_index(self, index_name: str, ascending: bool = True, unique: bool = False,
+                             collection_name: Optional[str] = None, database_name: Optional[str] = None):
+        self.select(collection_name=collection_name, database_name=database_name)
+        collection = self.get_collection()
+        collection.create_index([(index_name, 1 if ascending else -1)], unique=unique)
+
 
 if __name__ == '__main__':
     import pprint

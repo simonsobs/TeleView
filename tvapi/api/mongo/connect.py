@@ -1,5 +1,5 @@
 import os
-from typing import Optional
+from typing import Optional, Union, Any
 
 from pymongo import MongoClient
 from pymongo.database import Database
@@ -106,6 +106,12 @@ class MongoConnection:
         db = self.get_database(database_name=database_name)
         self.select_collection(collection_name_to_select=collection_name)
         return self.selected_collection_name in db.list_collection_names()
+
+    def find_matching(self, name: str, value: Union[str, int, float, None],
+                      collection_name: Optional[str] = None, database_name: Optional[str] = None) -> Any:
+        self.select(collection_name=collection_name, database_name=database_name)
+        collection = self.get_collection()
+        return collection.find({name: value})
 
 
 if __name__ == '__main__':
