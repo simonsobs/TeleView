@@ -16,6 +16,9 @@ services:
       - type: bind
         source: ./mongo
         target: /data/db
+    ports:
+      # open a port on the localhost computer for using the API outside a docker container
+      - "27017:27017"
   nginx:
     image: nginx:latest
     ports:

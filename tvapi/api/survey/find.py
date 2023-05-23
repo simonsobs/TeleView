@@ -138,3 +138,4 @@ def find_all_data(verbose: bool = False) -> Dict[str, List[str]]:
 
 if __name__ == '__main__':
     data_locations_all_test = find_all_data(verbose=True)
+
