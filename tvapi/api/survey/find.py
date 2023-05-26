@@ -1,7 +1,7 @@
 import os
 from typing import List, Dict, Tuple, NamedTuple, Optional, Union
 
-from tvapi.settings import BASE_DIR
+from tvapi.settings import level3_data_dirs
 
 
 expected_results_dir_names = {'outputs', 'plots'}
@@ -133,20 +133,6 @@ def smurf(smurf_data_path: str, verbose: bool = False):
                 )
 
 
-def get_level3_data_dirs(verbose:  bool = False) -> List[str]:
-    # This is what is used if the environment variable TELEVIEW_LEVEL3_DATA_DIRECTORIES is not set.
-    teleview_dir = os.path.dirname(BASE_DIR)
-    test_data_location_for_default = os.path.join(teleview_dir, 'test_data')
-    # get the data locations from the environment variable TELEVIEW_LEVEL3_DATA_DIRECTORIES
-    level3_data_dirs_str = os.environ.get('TELEVIEW_LEVEL3_DATA_DIRECTORIES', test_data_location_for_default)
-    level3_data_dirs = [raw_path.strip() for raw_path in level3_data_dirs_str.split(';')]
-    if verbose:
-        print("Level3_data_dirs:")
-        for i, level3_data_dir in list(enumerate(level3_data_dirs)):
-            print(f"{1 + i: 3}.) {level3_data_dir}")
-    return level3_data_dirs
-
-
 def find_data(level3_data_dir: str, verbose: bool = False, generator_mode: bool = True) -> Dict[str, List[str]]:
     data_locations_single_dir = {}
     for possible_dir in os.listdir(level3_data_dir):
@@ -167,7 +153,7 @@ def find_data(level3_data_dir: str, verbose: bool = False, generator_mode: bool 
 
 def find_all_data(verbose: bool = False, generator_mode: bool = True) -> Dict[str, List[SmurfDataLocation]]:
     data_locations_all = {}
-    for level3_data_dir in get_level3_data_dirs(verbose=verbose):
+    for level3_data_dir in level3_data_dirs:
         data_locations_single_dir = find_data(level3_data_dir=level3_data_dir, verbose=verbose,
                                               generator_mode=generator_mode)
         for dir_str, data_locations_this_dir in data_locations_single_dir.items():

@@ -10,7 +10,8 @@ from pymongo.errors import ServerSelectionTimeoutError
 class MongoConnection:
     """MongoDB Connection to a database"""
 
-    connection_string_default = 'mongodb://user:pass@localhost:27017/?authMechanism=DEFAULT'
+    # connection_string_default = 'mongodb://user:pass@localhost:27017/?authMechanism=DEFAULT'
+    connection_string_default = 'mongodb://user:pass@localhost:27016/?authMechanism=DEFAULT'
     env_mongo_connection_str = 'MONGO_CONNECTION_STRING'
     database_illegal_chars = {' ', '.', '$', '/', '\\', '\'', '"', '*', '<', '>', ':', '|', '?'}
 

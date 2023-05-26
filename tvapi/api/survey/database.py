@@ -23,7 +23,7 @@ def upload_all_data(verbose: bool = True, collection_name: str = 'all_data', rem
 def get_action_data(action: str, verbose: bool = True, collection_name: str = 'all_data'):
     with MongoOperate(verbose=verbose, database_name_to_select='files',
                       collection_name_to_select=collection_name) as mongo:
-        matching_data = mongo.find_matching(name='action_type', value=action)
+        matching_data = list(mongo.find_matching(name='action_type', value=action))
         return matching_data
 
 

@@ -10,10 +10,28 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
+import os
 from pathlib import Path
+
+# triggers print statements that are useful for debugging
+VERBOSE = True
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+
+# the locations of data directories
+# This is what is used if the environment variable TELEVIEW_LEVEL3_DATA_DIRECTORIES is not set.
+teleview_dir = os.path.dirname(BASE_DIR)
+test_data_location_for_default = os.path.join(teleview_dir, 'test_data')
+# get the data locations from the environment variable TELEVIEW_LEVEL3_DATA_DIRECTORIES
+level3_data_dirs_str = os.environ.get('TELEVIEW_LEVEL3_DATA_DIRECTORIES', test_data_location_for_default)
+level3_data_dirs = [raw_path.strip() for raw_path in level3_data_dirs_str.split(';')]
+if VERBOSE:
+    print("Level3_data_dirs:")
+    for i, level3_data_dir in list(enumerate(level3_data_dirs)):
+        print(f"{1 + i: 3}.) {level3_data_dir}")
 
 
 # Quick-start development settings - unsuitable for production
@@ -31,6 +49,8 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'api',
+    'example',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -117,6 +137,18 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
 STATIC_URL = 'static/'
+# STATICFILES_DIRS = level3_data_dirs
+
+
+STORAGES = {
+    "example": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+        "OPTIONS": {
+            "location": os.path.join(teleview_dir, 'static'),
+            "base_url": "/example/",
+        },
+    },
+}
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field

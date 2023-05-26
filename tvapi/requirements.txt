@@ -3,3 +3,4 @@ django-crontab
 gunicorn
 pymongo
 dnspython
+djangorestframework
