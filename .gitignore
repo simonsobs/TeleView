@@ -1,5 +1,6 @@
 # custom ignored items for the TeleView repo
 test_data
+test
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
