@@ -1,8 +1,14 @@
-import MongoTest from "@/app/componets/mongo";
+import GetDataMap, {MongoOpen, MongoClose } from "@/componets/mongo";
 
 
-export default function Home() {
-  MongoTest()
+export default async function Home() {
+  await MongoOpen()
+  const valuesArray = await GetDataMap()
+  await MongoClose()
+
+  const databaseList = valuesArray[0]['databases']
+  console.log("Listed Mongo Databases:\n", databaseList)
+
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-24">
       <div className="z-10 w-full max-w-5xl items-center justify-between font-mono text-sm lg:flex">
