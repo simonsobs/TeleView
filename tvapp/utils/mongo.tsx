@@ -4,11 +4,15 @@ import process from "process";
 
 
 // default parameters
-const mongoURI = 'mongodb://user:pass@localhost:27016/?authMechanism=DEFAULT'
+let mongoURI : string
+if (process.env.NODE_ENV === 'production') {
+    mongoURI = 'mongodb://user:pass@host.docker.internal:27016/?authMechanism=DEFAULT'
+} else {
+    mongoURI = 'mongodb://user:pass@localhost:27016/?authMechanism=DEFAULT'
+}
+console.log("Mongo URI: ", mongoURI)
 const primary_database = 'files'
 const primary_collection = 'all_data'
-
-
 // the client connection
 const client = new MongoClient(mongoURI);
 
