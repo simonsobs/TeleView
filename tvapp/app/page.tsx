@@ -1,4 +1,4 @@
-import GetDataMap, {MongoOpen, MongoClose } from "@/componets/mongo";
+import GetDataMap, {MongoOpen, MongoClose } from "@/utils/mongo";
 
 
 export default async function Home() {
@@ -7,7 +7,9 @@ export default async function Home() {
   await MongoClose()
 
   const databaseList = valuesArray[0]['databases']
+  const actionTypes = valuesArray[1]
   console.log("Listed Mongo Databases:\n", databaseList)
+  console.log("All Action Types:\n", actionTypes)
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-24">
