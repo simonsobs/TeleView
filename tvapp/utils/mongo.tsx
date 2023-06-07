@@ -18,20 +18,20 @@ const client = new MongoClient(mongoURI);
 
 
 // context managers for opening and closing the client connection to MongoDB
-export async function MongoOpen() : Promise<mongoDB.MongoClient> {
+export async function mongoOpen() : Promise<mongoDB.MongoClient> {
     console.log("Opening MongoClient Connection")
     return client.connect();
 }
 
 
-export async function MongoClose() : Promise<mongoDB.MongoClient> {
+export async function mongoClose() : Promise<mongoDB.MongoClient> {
     console.log("Closing MongoClient Connection ")
     return client.close();
 }
 
 
 // database, collection, and query utilities
-async function GetCollection(client: mongoDB.MongoClient,
+async function getCollection(client: mongoDB.MongoClient,
                              database : string = primary_database,
                              collection: string = primary_collection) :
     Promise<mongoDB.Collection> {
@@ -41,23 +41,30 @@ async function GetCollection(client: mongoDB.MongoClient,
 
 
 // Individual MongoDB queries
-async function ListDatabases(client: mongoDB.MongoClient) : Promise<mongoDB.ListDatabasesResult> {
+async function listDatabases(client: mongoDB.MongoClient) : Promise<mongoDB.ListDatabasesResult> {
     console.log("  Query: ListDatabase")
     return client.db().admin().listDatabases();
 }
 
 
-async function ListActionTypes(client: mongoDB.MongoClient) : Promise<Array<string>> {
+async function listActionTypes(client: mongoDB.MongoClient) : Promise<Array<string>> {
     console.log("  Query: ListActionTypes")
-    const collection = await GetCollection(client)
+    const collection = await getCollection(client)
     return collection.distinct('action_type');
+}
+
+async function listCourseTimeStamps(client: mongoDB.MongoClient) : Promise<Array<number>> {
+    console.log("  Query: ListCourseTimeStamps")
+    const collection = await getCollection(client)
+    const time_stamps = await collection.distinct('time_stamp_course');
+    return time_stamps.map((x: string) => parseInt(x));
 }
 
 
 // Wrapper function for MongoDB queries
-async function MongoQuery(Query: (client: mongoDB.MongoClient) => any) : Promise<any> {
+async function mongoQuery(query: (client: mongoDB.MongoClient) => any) : Promise<any> {
     try {
-        return Query(client)
+        return query(client)
     } catch (e) {
         console.error("Error in MongoQuery:", e);
     }
@@ -65,8 +72,12 @@ async function MongoQuery(Query: (client: mongoDB.MongoClient) => any) : Promise
 
 
 // scripts for data retrieval
-export default async function GetDataMap() : Promise<Array<any>> {
-    const databaseListPromise = MongoQuery(ListDatabases)
-    const actionTypesPromise = MongoQuery(ListActionTypes)
-    return Promise.all([databaseListPromise, actionTypesPromise]);
+export default async function getDataMap() : Promise<Map<string, any>> {
+    const actionTypesPromise = mongoQuery(listActionTypes)
+    const courseTimeStampsPromise = mongoQuery(listCourseTimeStamps)
+    const promiseArray  = await Promise.all([actionTypesPromise, courseTimeStampsPromise]);
+    return new Map([
+        ["actionTypes", promiseArray[0]],
+        ["courseTimeStamps", promiseArray[1]]
+    ])
 }
