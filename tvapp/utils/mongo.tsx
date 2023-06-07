@@ -81,3 +81,12 @@ export default async function getDataMap() : Promise<Map<string, any>> {
         ["courseTimeStamps", promiseArray[1]]
     ])
 }
+
+export async function listTimesPerAction(action_type: string) : Promise<Array<number>> {
+    const singleActionQuery = async (client: mongoDB.MongoClient): Promise<Array<number>> => {
+        const collection = await getCollection(client)
+        const time_stamps = await collection.distinct('time_stamp', {'action_type': action_type});
+        return time_stamps.map((x: string) => parseInt(x));
+    }
+    return await mongoQuery(singleActionQuery)
+}
