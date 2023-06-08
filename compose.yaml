@@ -11,7 +11,7 @@ services:
         target: /data/db
     ports:
       # open a port on the localhost computer for using the API outside a docker container
-      - "27016:27017"
+      - "27017:27017"
   tvapp:
     build:
       context: ./tvapp

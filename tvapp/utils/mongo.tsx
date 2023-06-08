@@ -6,9 +6,9 @@ import process from "process";
 // default parameters
 let mongoURI : string
 if (process.env.NODE_ENV === 'production') {
-    mongoURI = 'mongodb://user:pass@host.docker.internal:27016/?authMechanism=DEFAULT'
+    mongoURI = 'mongodb://user:pass@host.docker.internal:27017/?authMechanism=DEFAULT'
 } else {
-    mongoURI = 'mongodb://user:pass@localhost:27016/?authMechanism=DEFAULT'
+    mongoURI = 'mongodb://user:pass@localhost:27017/?authMechanism=DEFAULT'
 }
 console.log("Mongo URI:", mongoURI)
 const primary_database = 'files'
