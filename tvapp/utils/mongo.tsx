@@ -10,11 +10,12 @@ if (process.env.NODE_ENV === 'production') {
 } else {
     mongoURI = 'mongodb://user:pass@localhost:27016/?authMechanism=DEFAULT'
 }
-console.log("Mongo URI: ", mongoURI)
+console.log("Mongo URI:", mongoURI)
 const primary_database = 'files'
 const primary_collection = 'all_data'
 // the client connection
 const client = new MongoClient(mongoURI);
+client.connect();
 
 
 // context managers for opening and closing the client connection to MongoDB
@@ -35,7 +36,7 @@ async function getCollection(client: mongoDB.MongoClient,
                              database : string = primary_database,
                              collection: string = primary_collection) :
     Promise<mongoDB.Collection> {
-    console.log("  Query: GetCollection: ", database + '.' + collection)
+    // console.log("  Query: GetCollection: ", database + '.' + collection)
     return client.db(database).collection(collection);
 }
 
@@ -84,6 +85,7 @@ export default async function getDataMap() : Promise<Map<string, any>> {
 
 export async function listTimesPerAction(action_type: string) : Promise<Array<number>> {
     const singleActionQuery = async (client: mongoDB.MongoClient): Promise<Array<number>> => {
+        console.log("  Query: ListTimesPerAction: ", action_type)
         const collection = await getCollection(client)
         const time_stamps = await collection.distinct('time_stamp', {'action_type': action_type});
         return time_stamps.map((x: string) => parseInt(x));

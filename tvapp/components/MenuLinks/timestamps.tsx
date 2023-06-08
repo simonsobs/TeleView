@@ -4,7 +4,6 @@ import React from "react";
 function getDate(timestamp: number): [string, Number] {
     let timestampAsString: string = timestamp.toString()
     let timestampFull: number
-    console.log("timestamp:", timestamp, "timestampAsString.len", timestampAsString.length)
     if (timestampAsString.length === 5) {
         // This is a course (approximately per-day) unix timestamp, so we need to add 5 zeros to the end
         timestampAsString = timestampAsString + '00000'
@@ -15,7 +14,6 @@ function getDate(timestamp: number): [string, Number] {
     }
     const timeStampMilliSeconds : number = timestampFull * 1000
     const date = new Date(timeStampMilliSeconds)
-    console.log("date:", date)
     return [date.toUTCString(), timestampFull]
 }
 

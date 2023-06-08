@@ -1,27 +1,16 @@
-import { listTimesPerAction, mongoOpen, mongoClose } from "@/utils/mongo";
-import timestampLink from "@/components/MenuLinks/timestamps";
 import React from "react";
+import timestampLink from "@/components/MenuLinks/timestamps";
+import { listTimesPerAction } from "@/utils/mongo";
 
-export async function getServerSideProps({params}: { params: any}): Promise<{}> {
-    console.log("getServerSideProps, params:", params)
-    const { action } = params;
-    return {
-        props: {
-            action
-        }
-    }
-}
+
+// set this to 0, query the database, getting the newest data, and remake the page
+export const revalidate = 0
+
 
 export default async function Page({ params }: { params: { action: string } }) {
-    const actionType: string = params.action;
+    const actionType = params.action;
     console.log("By Action:", actionType, "Navigation Page")
-    let timestamps: Array<number> = []
-    if (actionType) {
-        await mongoOpen()
-        timestamps = await listTimesPerAction(actionType)
-        await mongoClose()
-    }
-
+    const timestamps: Array<number> = await listTimesPerAction(actionType)
     return (
         <main className="flex min-h-screen flex-col items-center justify-between p-24">
             <div className="z-10 w-full max-w-5xl items-center justify-between font-mono text-sm lg:flex">
