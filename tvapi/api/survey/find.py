@@ -2,45 +2,8 @@ import os
 from typing import List, Dict, Tuple, NamedTuple, Optional, Union
 
 from tvapi.settings import level3_data_dirs
+from api.mongo.configs import USE_RELATIVE_PATH, EXPECTED_OUTPUT_DIR_NAMES
 
-
-expected_results_dir_names = {'outputs', 'plots'}
-
-known_actions_types = {
-    'analyze_iv_from_file',
-    'analyze_slow_iv_from_file',
-    'analyze_tickle_data',
-    'atten_optimization',
-    'estimate_phase_delay',
-    'find_freq',
-    'find_peak',
-    'fixed_tone_profile',
-    'fixed_tone_profile_sweep',
-    'full_band_resp',
-    'optimize_attens',
-    'optimize_band_atten',
-    'plot_find_freq',
-    'plot_squid_curves',
-    'plot_tune_summary',
-    'read_adc_data',
-    'read_dac_data',
-    'relock_tracking_setup',
-    'setup_phase_delay',
-    'setup_tracking_params',
-    'setup_tune',
-    'slow_iv_all',
-    'take_bgmap',
-    'take_complex_impedance',
-    'take_iv',
-    'take_noise',
-    'take_noise_psd',
-    'tracking_quality',
-    'tracking_setup',
-    'tracking_setup_mult_bands',
-    'uxm_relock',
-    'uxm_setup',
-    'None',
-}
 
 all_found_action_types = set()
 
@@ -74,12 +37,12 @@ def get_results_files(parent_dir: str) -> Dict[str, List[str]]:
     found_dirs = set()
     data_files_by_type = {}
     for output_dir in os.listdir(parent_dir):
-        if output_dir not in expected_results_dir_names:
+        if output_dir not in EXPECTED_OUTPUT_DIR_NAMES:
             raise ValueError(f"Unexpected dir name {output_dir} inside {parent_dir}")
         found_dirs.add(output_dir)
         full_path_output_dir = os.path.join(parent_dir, output_dir)
         data_files_by_type[output_dir] = os.listdir(full_path_output_dir)
-    for not_found_dir in expected_results_dir_names - found_dirs:
+    for not_found_dir in EXPECTED_OUTPUT_DIR_NAMES - found_dirs:
         data_files_by_type[not_found_dir] = None
     return data_files_by_type
 
@@ -90,7 +53,7 @@ class SmurfDataLocation(NamedTuple):
     ufm_letter: str
     ufm_number: int
     action_type: str
-    full_path: str
+    path: str
     outputs: Optional[List[str]] = None
     plots: Optional[List[str]] = None
 
@@ -121,13 +84,21 @@ def smurf(smurf_data_path: str, verbose: bool = False):
                 time_stamp_int, action_type = parse_action_name(action_dir)
                 data_files_by_type = get_results_files(parent_dir=full_path_action_dir)
                 all_found_action_types.add(action_type)
+                if USE_RELATIVE_PATH:
+                    path_trimmed = full_path_action_dir.replace(smurf_data_path, 'smurf')
+                else:
+                    path_trimmed = full_path_action_dir
+                # convert the path to use forward slashes instead of backslashes (a Windows issue)
+                path_formatted = path_trimmed.replace('\\', '/')
+                if not path_formatted.endswith('/'):
+                    path_formatted = path_formatted + '/'
                 yield SmurfDataLocation(
                     time_stamp_course=course_time_int,
                     time_stamp=time_stamp_int,
                     ufm_letter=ufm_letter,
                     ufm_number=ufm_number,
                     action_type=action_type,
-                    full_path=full_path_action_dir,
+                    path=path_formatted,
                     outputs=data_files_by_type['outputs'],
                     plots=data_files_by_type['plots'],
                 )

@@ -6,13 +6,13 @@ from pymongo.database import Database
 from pymongo.collection import Collection
 from pymongo.errors import ServerSelectionTimeoutError
 
+from api.mongo.configs import CONNECTION_STRING_DEFAULT, ENV_MONG_CONNECTION_STRING
+
 
 class MongoConnection:
     """MongoDB Connection to a database"""
-
-    # connection_string_default = 'mongodb://user:pass@localhost:27017/?authMechanism=DEFAULT'
-    connection_string_default = 'mongodb://user:pass@localhost:27016/?authMechanism=DEFAULT'
-    env_mongo_connection_str = 'MONGO_CONNECTION_STRING'
+    connection_string_default = CONNECTION_STRING_DEFAULT
+    env_mongo_connection_str = ENV_MONG_CONNECTION_STRING
     database_illegal_chars = {' ', '.', '$', '/', '\\', '\'', '"', '*', '<', '>', ':', '|', '?'}
 
     def __init__(self, connection_uri: str = connection_string_default, verbose: bool = False,

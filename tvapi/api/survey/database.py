@@ -1,5 +1,5 @@
 from api.mongo.operate import MongoOperate
-from api.survey.find import find_all_data, all_found_action_types
+from api.survey.find import find_all_data
 
 
 def upload_all_data(verbose: bool = True, collection_name: str = 'all_data', remove_old_data: bool = False):
@@ -28,5 +28,5 @@ def get_action_data(action: str, verbose: bool = True, collection_name: str = 'a
 
 
 if __name__ == '__main__':
-    # upload_all_data(verbose=True, collection_name='all_data', remove_old_data=True)
-    matching_data = get_action_data(action='take_iv', verbose=True, collection_name='all_data')
+    upload_all_data(verbose=True, collection_name='all_data', remove_old_data=True)
+    # matching_data = get_action_data(action='take_iv', verbose=True, collection_name='all_data')
