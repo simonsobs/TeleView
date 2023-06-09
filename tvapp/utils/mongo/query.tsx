@@ -1,3 +1,5 @@
+import {timestamp} from "yaml/dist/schema/yaml-1.1/timestamp";
+
 const {MongoClient} = require('mongodb');
 import * as mongoDB from "mongodb";
 import process from "process";
@@ -89,6 +91,26 @@ export async function listTimesPerAction(action_type: string) : Promise<Array<nu
         const collection = await getCollection(client)
         const time_stamps = await collection.distinct('time_stamp', {'action_type': action_type});
         return time_stamps.map((x: string) => parseInt(x));
+    }
+    return await mongoQuery(singleActionQuery)
+}
+
+
+export async function getCursorPerFilter(action_type: string | undefined,
+                                        time_stamp: number | undefined,
+                                        time_stamp_course: number | undefined,
+                                        ufm_letter: string | undefined,
+                                        ufm_number: number | undefined) : Promise<mongoDB.FindCursor> {
+    let filter : {[key: string]: string | number} = {}
+    if (action_type) {filter['action_type'] = action_type}
+    if (time_stamp) {filter['time_stamp'] = time_stamp}
+    if (time_stamp_course) {filter['time_stamp_course'] = time_stamp_course}
+    if (ufm_letter) {filter['ufm_letter'] = ufm_letter}
+    if (ufm_number) {filter['ufm_number'] = ufm_number}
+    const singleActionQuery = async (client: mongoDB.MongoClient): Promise<mongoDB.FindCursor> => {
+        console.log("  Query: getCursorPerFilter, Filter: ", filter)
+        const collection = await getCollection(client)
+        return collection.find(filter);
     }
     return await mongoQuery(singleActionQuery)
 }

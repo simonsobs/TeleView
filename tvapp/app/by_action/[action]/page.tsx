@@ -1,6 +1,7 @@
 import React from "react";
 import timestampLink from "@/components/MenuLinks/timestamps";
-import { listTimesPerAction } from "@/utils/mongo";
+import { listTimesPerAction } from "@/utils/mongo/query";
+import * as mongoDB from "mongodb";
 
 
 // set this to 0, query the database, getting the newest data, and remake the page
@@ -9,8 +10,9 @@ export const revalidate = 0
 
 export default async function Page({ params }: { params: { action: string } }) {
     const actionType = params.action;
+    const uriPrefix: string = "by_action" + "/" + actionType
     console.log("By Action:", actionType, "Navigation Page")
-    const timestamps: Array<number> = await listTimesPerAction(actionType)
+    const time_stamps: Array<number> = await listTimesPerAction(actionType)
     return (
         <main className="flex min-h-screen flex-col items-center justify-between p-24">
             <div className="z-10 w-full max-w-5xl items-center justify-between font-mono text-sm lg:flex">
@@ -20,7 +22,7 @@ export default async function Page({ params }: { params: { action: string } }) {
             </div>
 
             <div className="mb-32 grid text-center lg:mb-0 lg:grid-cols-4 lg:text-left">
-                {timestamps.map((timestamp: number) => timestampLink(timestamp))}
+                {time_stamps.map((timestamp: number) => timestampLink(timestamp, uriPrefix))}
             </div>
         </main>
     )

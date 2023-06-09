@@ -1,4 +1,4 @@
-import getDataMap from "@/utils/mongo";
+import getDataMap from "@/utils/mongo/query";
 import actionLink from "@/components/MenuLinks/actions";
 
 
@@ -9,7 +9,7 @@ export const revalidate = 0
 export default async function Page() {
     const valuesMap = await getDataMap()
     const actionTypes = valuesMap.get("actionTypes")
-    const courseTimeStamps = valuesMap.get("courseTimeStamps")
+    // const courseTimeStamps = valuesMap.get("courseTimeStamps")
 
     return (
         <main className="flex min-h-screen flex-col items-center justify-between p-24">

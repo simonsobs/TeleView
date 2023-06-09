@@ -1,4 +1,5 @@
 import React from "react";
+import Link from "next/link";
 
 
 function getDate(timestamp: number): [string, Number] {
@@ -18,10 +19,10 @@ function getDate(timestamp: number): [string, Number] {
 }
 
 
-export default function timestampLink(timestamp: number): React.ReactNode {
+export default function timestampLink(timestamp: number, uri: string): React.ReactNode {
     const [date, timestampFull] = getDate(timestamp)
     return (
-        <a
+        <Link href={uri + "/" + timestampFull}
             className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
             rel="noopener noreferrer"
             key={timestamp}
@@ -38,6 +39,6 @@ export default function timestampLink(timestamp: number): React.ReactNode {
                 </p>
 
             </h2>
-        </a>
+        </Link>
     )
 }
