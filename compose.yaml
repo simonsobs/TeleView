@@ -15,6 +15,13 @@ services:
   tvapp:
     build:
       context: ./tvapp
+    depends_on:
+      - mongodb
+  tvapi:
+    build:
+      context: ./tvapi
+    depends_on:
+      - mongodb
   nginx:
     image: nginx:latest
     ports:
@@ -24,3 +31,4 @@ services:
       - ./test_data:/volume_data
     depends_on:
       - tvapp
+      - tvapi
