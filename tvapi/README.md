@@ -21,4 +21,11 @@ python manage.py runserver
 
 Open [http://127.0.0.1:8000](http://127.0.0.1:8000) with your browser to see the result.
 
+## use Admin interface
+http://127.0.0.1:8000/admin/
 
+### username:
+`root`
+
+### password:
+`I8pi4fun!`
