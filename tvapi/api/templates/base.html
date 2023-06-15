@@ -20,6 +20,8 @@
         <link rel="shortcut icon" href="{% static 'favicon-32x32.png' %}" type="image/x-icon">
     </head>
     <body>
+        <script src="{% static 'jquery-3.7.0.min.js' %}"></script>
+        <script src="{% static 'js/bootstrap.js' %}"></script>
         <div class="container">
             <div class="jumbotron">
                 <h1>Base.html for Header</h1>
@@ -37,8 +39,6 @@
             {% block content %}
             {% endblock content %}
         </div>
-        <script src="{% static 'jquery-3.7.0.min.js' %}"></script>
-        <script src="{% static 'js/bootstrap.js' %}"></script>
         {% block javascript %}
         {% endblock javascript %}
     </body>

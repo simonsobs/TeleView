@@ -20,9 +20,14 @@ RUN apt-get install cron -y
 COPY . .
 # this will also install the SpExoDisks, the data science package.
 RUN pip install -r requirements.txt
+# Perpare the local Django database.
+RUN python manage.py makemigrations
+# Initalise the database
+RUN python manage.py migrate
+# put all the static files in the right place
+RUN python manage.py collectstatic --noinput
 # add the cron jobs to the Django management, but only after the data is upload to mysql
 RUN python manage.py crontab add
-
 # what runs when the container is started
 CMD ["/start.sh"]
 # CMD ["gunicorn", "tvapi.wsgi", "--bind", "0.0.0.0:8000"]

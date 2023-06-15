@@ -1,21 +1,14 @@
-from django.shortcuts import render
-from datetime import datetime
+import threading
 
-# Create your views here.
-from warnings import warn
 from django.http import JsonResponse
-from django.urls import reverse
-from django.views.generic import TemplateView, ListView
-from api.survey.database import get_action_data
+from django.views.generic import TemplateView
+
 from .models import StatusModel
+from .survey.post_status import allowed_status_types, post_status_test
 
 
 class HomeView(TemplateView):
     template_name = 'index.html'
-
-
-class StatusView(TemplateView):
-    template_name = 'status.html'
 
     def get(self, request, *args, **kwargs):
         print("Status Page Print Statement, args: ", args, "kwargs: ", kwargs)
@@ -26,3 +19,36 @@ class StatusView(TemplateView):
 def get_status(request):
     data = list(StatusModel.objects.values())
     return JsonResponse(data, safe=False)
+
+
+def test_status(request):
+    thread = threading.Thread(target=post_status_test, args=('test', 30, 20))
+    thread.start()
+    return JsonResponse({'message': 'started test sequence'}, status=200)
+
+
+def post_status(request):
+    request_string = request.path.split('/api/post_status/', 1)[1].lower()
+    try:
+        status_type, percent_complete = request_string.split('=', 1)
+    except ValueError as e:
+        return JsonResponse({'message': "incorrect format, wanted 'status_type=percent_complete'", 'error': str(e)},
+                            status=400)
+    print('status_type, percent_complete: ', status_type, percent_complete)
+    if status_type not in allowed_status_types:
+        return JsonResponse({'message': f'invalid status_type ({status_type}), allowed types: {allowed_status_types}'},
+                            status=400)
+    try:
+        percent_complete = float(percent_complete)
+    except ValueError as e:
+        return JsonResponse({'message': f'invalid percent_complete ({percent_complete}), must be a float'},
+                            status=400)
+    if percent_complete < 0.0 or percent_complete > 100.0:
+        return JsonResponse({'message': f'invalid percent_complete ({percent_complete}), must be between 0.0 and 100.0'},
+                            status=400)
+    # this is the definition of completeness
+    is_complete = percent_complete == float(100.0)
+    # post the parsed status to the database
+    StatusModel.objects.update_or_create(status_type=status_type, defaults={'percent_complete': percent_complete,
+                                                                            'is_complete': is_complete})
+    return JsonResponse({'message': f'successfully posted status_type={status_type}, percent_complete={percent_complete}'})

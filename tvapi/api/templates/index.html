@@ -1,6 +1,15 @@
-<h1>Index.html</h1>
-<p>
-    Hello, world. You're at the api index.
-</p>
+{% extends 'base.html' %}
 
-<a href="{% url 'test_page' %}" class="btn btn-high btn-success">Link to the Test Page</a>
+{% block title %}
+<h1 class="text-center mt-3">Status of Database Actions</h1>
+{% endblock %}
+
+{% block content %}
+<div id="spinner-box" class="text-center mt-3">
+    <div class="spinner-border text-primary" role="status">
+        <span class="sr-only">Loading...</span>
+    </div>
+</div>
+<div id="status-box" class="text-center mt-3">
+</div>
+{% endblock %}
