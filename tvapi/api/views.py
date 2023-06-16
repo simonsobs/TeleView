@@ -1,10 +1,12 @@
 import threading
 
 from django.http import JsonResponse
+from django.shortcuts import redirect
 from django.views.generic import TemplateView
 
 from .models import StatusModel
-from .survey.post_status import allowed_status_types, post_status_test
+from .survey.database import do_smurf_scan
+from .survey.post_status import allowed_status_types, post_status, post_status_test
 
 
 class HomeView(TemplateView):
@@ -27,7 +29,26 @@ def test_status(request):
     return JsonResponse({'message': 'started test sequence'}, status=200)
 
 
-def post_status(request):
+def smurf_scan_view(request):
+    post_type = 'scan_smurf'
+    percent_complete = 0.0
+    is_ready = True
+    for single_status in list(StatusModel.objects.values()):
+        if single_status['status_type'] == post_type and single_status['percent_complete'] < 100.0:
+            is_ready = False
+            percent_complete = single_status['percent_complete']
+            break
+    if is_ready:
+        post_status(post_type, percent_complete=percent_complete, verbose=False)
+        request_string = request.path.split('/api/smurf_scan/', 1)[1].lower()
+        thread = threading.Thread(target=do_smurf_scan, args=(None, None))
+        thread.start()
+        return redirect('/api/')
+    else:
+        return JsonResponse({'message': f'A smurf_scan in progress and is {percent_complete}% complete.'}, status=400)
+
+
+def post_status_view(request):
     request_string = request.path.split('/api/post_status/', 1)[1].lower()
     try:
         status_type, percent_complete = request_string.split('=', 1)

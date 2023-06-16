@@ -4,6 +4,12 @@ EXPECTED_OUTPUT_DIR_NAMES = {'outputs', 'plots'}
 CONNECTION_STRING_DEFAULT = 'mongodb://user:pass@localhost:27017/?authMechanism=DEFAULT'
 ENV_MONG_CONNECTION_STRING = 'MONGO_CONNECTION_STRING'
 
+EXTRA_TIME_SECONDS_FOR_COURSE_TIME = 60 * 60 * 12  # 12 hours
+SEND_PROCESS_STATUS = True
+
+REPORTS_STATUS_TIMEOUT_SECONDS = 7  # 7 seconds
+REPORTS_STATUS_MINIMUM_WAIT_SECONDS = 5  # 5second
+
 # KNOWN_ACTION_TYPES = {
 #     'analyze_iv_from_file',
 #     'analyze_slow_iv_from_file',

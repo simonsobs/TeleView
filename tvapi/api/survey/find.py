@@ -1,11 +1,21 @@
 import os
+from time import time
 from typing import List, Dict, Tuple, NamedTuple, Optional, Union
 
 from tvapi.settings import level3_data_dirs
-from api.mongo.configs import USE_RELATIVE_PATH, EXPECTED_OUTPUT_DIR_NAMES
+from api.mongo.configs import USE_RELATIVE_PATH, EXPECTED_OUTPUT_DIR_NAMES, SEND_PROCESS_STATUS, \
+    EXTRA_TIME_SECONDS_FOR_COURSE_TIME
 
 
 all_found_action_types = set()
+
+
+def convert_course_time_to_timestamp(course_time: int) -> int:
+    return int(str(course_time) + '00000')
+
+
+def get_timestamp_max_from_now() -> int:
+    return int(time()) + 1
 
 
 def get_time_dirs(parent_dir: str) -> List[int]:
@@ -71,10 +81,17 @@ def data_scraper(func):
 
 
 @data_scraper
-def smurf(smurf_data_path: str, verbose: bool = False):
+def smurf(timestamp_min: int, timestamp_max: int, smurf_data_path: str, verbose: bool = False):
+
     if verbose:
         print(f"  Scrapping smurf data from {smurf_data_path}")
     for course_time_int in get_time_dirs(parent_dir=smurf_data_path):
+        course_time_stamp_for_compare_min = convert_course_time_to_timestamp(course_time_int)
+        course_time_stamp_for_compare_max = course_time_stamp_for_compare_min + 100000 \
+                                            + EXTRA_TIME_SECONDS_FOR_COURSE_TIME
+        if course_time_stamp_for_compare_min < timestamp_min or course_time_stamp_for_compare_max > timestamp_max:
+            # the data is likely to be outside the data is outside the requested time range
+            continue
         full_path_course_time_dir = os.path.join(smurf_data_path, str(course_time_int))
         for ufm_dir in get_ufm_dirs(parent_dir=full_path_course_time_dir):
             ufm_letter, ufm_number = parse_ufm_name(ufm_dir)
@@ -82,6 +99,10 @@ def smurf(smurf_data_path: str, verbose: bool = False):
             for action_dir in os.listdir(full_path_ufm_dir):
                 full_path_action_dir = os.path.join(full_path_ufm_dir, action_dir)
                 time_stamp_int, action_type = parse_action_name(action_dir)
+                if isinstance(time_stamp_int, int):
+                    if time_stamp_int < timestamp_min or time_stamp_int > timestamp_max:
+                        # this data is outside the requested time range
+                        continue
                 data_files_by_type = get_results_files(parent_dir=full_path_action_dir)
                 all_found_action_types.add(action_type)
                 if USE_RELATIVE_PATH:
@@ -104,7 +125,8 @@ def smurf(smurf_data_path: str, verbose: bool = False):
                 )
 
 
-def find_data(level3_data_dir: str, verbose: bool = False, generator_mode: bool = True) -> Dict[str, List[str]]:
+def find_data(timestamp_min: int, timestamp_max: int,
+              level3_data_dir: str, verbose: bool = False, generator_mode: bool = True) -> Dict[str, List[str]]:
     data_locations_single_dir = {}
     for possible_dir in os.listdir(level3_data_dir):
         # only parse directories that are in the data_scraper_functions dictionary
@@ -112,9 +134,11 @@ def find_data(level3_data_dir: str, verbose: bool = False, generator_mode: bool 
         full_dir_path = os.path.join(level3_data_dir, possible_dir)
         if os.path.isdir(full_dir_path) and dir_str in data_scraper_functions.keys():
             if generator_mode:
-                data_locations_this_dir = data_scraper_functions[dir_str](full_dir_path, verbose=verbose)
+                data_locations_this_dir = data_scraper_functions[dir_str](timestamp_min, timestamp_max,
+                                                                          full_dir_path, verbose=verbose)
             else:
-                data_locations_this_dir = list(data_scraper_functions[dir_str](full_dir_path, verbose=verbose))
+                data_locations_this_dir = list(data_scraper_functions[dir_str](timestamp_min, timestamp_max,
+                                                                               full_dir_path, verbose=verbose))
             if dir_str in data_locations_single_dir.keys():
                 data_locations_single_dir[dir_str].extend(data_locations_this_dir)
             else:
@@ -122,10 +146,17 @@ def find_data(level3_data_dir: str, verbose: bool = False, generator_mode: bool 
     return data_locations_single_dir
 
 
-def find_all_data(verbose: bool = False, generator_mode: bool = True) -> Dict[str, List[SmurfDataLocation]]:
+def find_all_data(verbose: bool = False, generator_mode: bool = True,
+                  timestamp_min: Optional[int] = None, timestamp_max: Optional[int] = None,
+                  ) -> Dict[str, List[SmurfDataLocation]]:
     data_locations_all = {}
+    if timestamp_min is None:
+        timestamp_min = 0
+    if timestamp_max is None:
+        timestamp_max = int(time()) + 1
     for level3_data_dir in level3_data_dirs:
-        data_locations_single_dir = find_data(level3_data_dir=level3_data_dir, verbose=verbose,
+        data_locations_single_dir = find_data(timestamp_min=timestamp_min, timestamp_max=timestamp_max,
+                                              level3_data_dir=level3_data_dir, verbose=verbose,
                                               generator_mode=generator_mode)
         for dir_str, data_locations_this_dir in data_locations_single_dir.items():
             if dir_str in data_locations_all.keys():

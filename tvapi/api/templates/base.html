@@ -24,11 +24,10 @@
         <script src="{% static 'js/bootstrap.js' %}"></script>
         <div class="container">
             <div class="jumbotron">
-                <h1>Base.html for Header</h1>
-                <p>
-                    This is the base header file for the API.
-                </p>
-
+                <h1>Links to Trigger Database Scans</h1>
+                <ul>
+                    <li><a href="{% url 'smurf-scan-view' %}">Smurf Directory</a></li>
+                </ul>
             </div>
         </div>
         <div class="container">

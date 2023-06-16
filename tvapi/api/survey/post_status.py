@@ -6,7 +6,7 @@ import requests
 import numpy as np
 
 
-allowed_status_types = {'scan_full', 'test'}
+allowed_status_types = {'scan_smurf', 'test'}
 
 
 def post_status(status_type: str, is_complete: bool = False, percent_complete: Optional[float] = None,
