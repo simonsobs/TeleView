@@ -15,16 +15,13 @@ application's directory.
 ![TeleView components and relationships](static/TeleViewTechnologyStack.png "TeleView Stack")
 
 ## Pointing to data
-The Django restAPI in tvapi uses an environment variable to see the parent directories that contain all the 
+The Django project, tvapi, uses an environment variable to see parent directories that contain all the 
 data that is accessible by the TeleView data portal.
 
-This variable name is:
+These variables are:
 ```
-TELEVIEW_LEVEL3_DATA_DIRECTORIES
+- TELEVIEW_SMURF_DATA_DIR  # ./TeleView/test_data/smurf is the default when this is not set
 ```
-
-It is expected that this variable contains one or more full paths to parent data directories.
-Each full path is expected to be separated by the semicolon character `;`.
-
-If this variable is not available on a given system, 
-then the local directory TeleView/test_data is used as the only data directory location.
+Edit this value in the Docker .evn file if running Docker. 
+If deploying locally, set these variables in your environment.
+See the file ".env-default" this project's root directory for an example configurable options.

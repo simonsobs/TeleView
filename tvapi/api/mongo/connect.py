@@ -6,20 +6,20 @@ from pymongo.database import Database
 from pymongo.collection import Collection
 from pymongo.errors import ServerSelectionTimeoutError
 
-from api.mongo.configs import CONNECTION_STRING_DEFAULT, ENV_MONG_CONNECTION_STRING
+from api.mongo.configs import CONNECTION_STRING_DEFAULT
 
 
 class MongoConnection:
     """MongoDB Connection to a database"""
     connection_string_default = CONNECTION_STRING_DEFAULT
-    env_mongo_connection_str = ENV_MONG_CONNECTION_STRING
     database_illegal_chars = {' ', '.', '$', '/', '\\', '\'', '"', '*', '<', '>', ':', '|', '?'}
 
     def __init__(self, connection_uri: str = connection_string_default, verbose: bool = False,
                  database_name_to_select: Optional[str] = None, collection_name_to_select: Optional[str] = None):
         self.verbose = verbose
         if connection_uri is None:
-            connection_uri = os.environ.get(self.env_mongo_connection_str, self.connection_string_default)
+            connection_uri = self.connection_string_default
+        print(f'connection_uri: {connection_uri}')
         self.connection_uri = connection_uri
         # set in the select_database method
         self.selected_db_name = None

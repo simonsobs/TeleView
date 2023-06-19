@@ -23,8 +23,12 @@ RUN pip install -r requirements.txt
 # Perpare the local Django database.
 RUN python manage.py makemigrations
 # Initalise the database
-RUN python manage.py migrate
-# put all the static files in the right place
+RUN python manage.py migrate --noinput
+# make a superuser the Django database when all these aguments are passed in
+ARG DJANGO_SUPERUSER_USERNAME=$DJANGO_SUPERUSER_USERNAME
+ARG DJANGO_SUPERUSER_PASSWORD=$DJANGO_SUPERUSER_PASSWORD
+ARG DJANGO_SUPERUSER_EMAIL=$DJANGO_SUPERUSER_EMAIL
+RUN python manage.py createsuperuser --noinput
 RUN python manage.py collectstatic --noinput
 # add the cron jobs to the Django management, but only after the data is upload to mysql
 RUN python manage.py crontab add

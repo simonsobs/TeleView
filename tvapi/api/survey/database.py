@@ -6,8 +6,8 @@ import numpy as np
 
 from api.mongo.operate import MongoOperate
 from api.survey.post_status import post_status, allowed_status_types
-from api.mongo.configs import REPORTS_STATUS_TIMEOUT_SECONDS, REPORTS_STATUS_MINIMUM_WAIT_SECONDS
-from api.survey.find import find_all_data, convert_course_time_to_timestamp, get_timestamp_max_from_now
+from api.mongo.configs import REPORTS_STATUS_TIMEOUT_SECONDS, REPORTS_STATUS_MINIMUM_WAIT_SECONDS, VERBOSE
+from api.survey.find import find_all_data, convert_course_time_to_timestamp
 
 
 def get_action_data(action: str, verbose: bool = True, collection_name: str = 'all_data'):
@@ -67,7 +67,7 @@ class DatabaseEvent:
 
         # finally, trigger the appropriate event
         if self.event_type == 'scan_smurf':
-            self.upload_smurf_data()
+            self.upload_data(collection_name='smurf', remove_old_data=True)
 
     def send_status(self, status_type: str, is_complete: bool = False, timestamp_course: Optional[int] = None):
         if is_complete:
@@ -85,6 +85,7 @@ class DatabaseEvent:
                 self.last_status_time = now
                 if timestamp_course is None:
                     post_status(status_type=status_type,  percent_complete=0.0, verbose=self.verbose)
+                    self.last_percent_complete = 0.0
                 else:
                     # convert the course time to a timestamp, adding the appropriate numer of digits.
                     timestamp_course = convert_course_time_to_timestamp(timestamp_course)
@@ -103,33 +104,35 @@ class DatabaseEvent:
                         post_status(status_type=status_type, percent_complete=percent_complete, verbose=self.verbose)
                         self.last_percent_complete = percent_complete
 
-    def upload_smurf_data(self, collection_name: str = 'smurf', remove_old_data: bool = False):
+    def upload_data(self, collection_name: str = 'smurf', remove_old_data: bool = False):
         """Upload all data to the mongoDB database"""
         with MongoOperate(verbose=self.verbose, database_name_to_select='files',
                           collection_name_to_select=collection_name) as mongo:
+            status_type = f'scan_{collection_name}'
+            self.send_status(status_type=status_type, is_complete=False, timestamp_course=None)
             # drop the old data if requested
             if remove_old_data:
                 mongo.collection_remove_if_exists(collection_name=collection_name)
             # upload all the data from the generator to the database
             all_data = find_all_data(verbose=self.verbose, generator_mode=True,
                                      timestamp_min=self.timestamp_min, timestamp_max=self.timestamp_max)
-            for record in all_data['smurf']:
+            for record in all_data[collection_name]:
                 mongo.post(document=record.to_dict())
-                self.send_status(status_type='scan_smurf', timestamp_course=record.time_stamp_course)
+                self.send_status(status_type=status_type, timestamp_course=record.time_stamp_course)
             # add indexes to the database to make sorting faster
             mongo.collection_add_index(index_name='time_stamp_course', ascending=False, unique=False)
             mongo.collection_add_index(index_name='time_stamp', ascending=False, unique=False)
             mongo.collection_add_index(index_name='ufm_number', ascending=True, unique=False)
             mongo.collection_add_index(index_name='action_type', ascending=True, unique=False)
-            self.send_status(status_type='scan_smurf', is_complete=True)
+            self.send_status(status_type=status_type, is_complete=True)
 
 
-def do_smurf_scan(timestamp_min: Optional[Union[datetime, int, float, None]] = None,
+def do_scan_smurf(timestamp_min: Optional[Union[datetime, int, float, None]] = None,
                   timestamp_max: Optional[Union[datetime, int, float, None]] = None,):
     DatabaseEvent(event_type='scan_smurf',
                   timestamp_min=timestamp_min,
                   timestamp_max=timestamp_max,
-                  verbose=True)
+                  verbose=VERBOSE)
 
 
 if __name__ == '__main__':

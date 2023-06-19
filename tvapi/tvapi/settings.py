@@ -24,14 +24,6 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # the locations of data directories
 # This is what is used if the environment variable TELEVIEW_LEVEL3_DATA_DIRECTORIES is not set.
 teleview_dir = os.path.dirname(BASE_DIR)
-test_data_location_for_default = os.path.join(teleview_dir, 'test_data')
-# get the data locations from the environment variable TELEVIEW_LEVEL3_DATA_DIRECTORIES
-level3_data_dirs_str = os.environ.get('TELEVIEW_LEVEL3_DATA_DIRECTORIES', test_data_location_for_default)
-level3_data_dirs = [raw_path.strip() for raw_path in level3_data_dirs_str.split(';')]
-if VERBOSE:
-    print("Level3_data_dirs:")
-    for i, level3_data_dir in list(enumerate(level3_data_dirs)):
-        print(f"{1 + i: 3}.) {level3_data_dir}")
 
 
 # Quick-start development settings - unsuitable for production
@@ -41,7 +33,7 @@ if VERBOSE:
 SECRET_KEY = 'django-insecure-#j1oh9q%^3qtop8mi1#z6^xfh!ue#=w3xoxfoqbbjlw=r%@l+o'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('TELEVIEW_DEBUG', default=True)
 
 ALLOWED_HOSTS = []
 
@@ -146,3 +138,7 @@ STATICFILES_DIRS = [
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# When set to True, if the request URL does not match any of the patterns in the URLconf, it will
+# try appending a slash to the request path and try again. If it finds a match, the function will
+APPEND_SLASH = True

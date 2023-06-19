@@ -14,7 +14,7 @@ if (process.env.NODE_ENV === 'production') {
 }
 console.log("Mongo URI:", mongoURI)
 const primary_database = 'files'
-const primary_collection = 'all_data'
+const primary_collection = 'smurf'
 // the client connection
 const client = new MongoClient(mongoURI);
 client.connect();

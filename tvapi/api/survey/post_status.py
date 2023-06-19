@@ -21,7 +21,9 @@ def post_status(status_type: str, is_complete: bool = False, percent_complete: O
     if status_type not in allowed_status_types:
         raise ValueError(f'invalid status_type ({status_type}), allowed types: {allowed_status_types}')
     status_uri = f'http://localhost:8000/api/post_status/{status_type}={percent_complete}'
+    print("requests uri: ", status_uri)
     x = requests.get(status_uri)
+    print("requests complete")
     if verbose:
         if x.status_code == 200:
             print(x.text)
@@ -45,4 +47,5 @@ def post_status_test(status_type: str = 'test', total_time: Union[int, float] = 
 
 
 if __name__ == '__main__':
-    post_status_test(steps=50)
+    post_status('test', percent_complete=0.0, verbose=True)
+    # post_status_test(steps=50)

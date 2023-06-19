@@ -2,7 +2,7 @@ import os
 from time import time
 from typing import List, Dict, Tuple, NamedTuple, Optional, Union
 
-from tvapi.settings import level3_data_dirs
+from api.mongo.configs import SMURF_DATA_DIR
 from api.mongo.configs import USE_RELATIVE_PATH, EXPECTED_OUTPUT_DIR_NAMES, SEND_PROCESS_STATUS, \
     EXTRA_TIME_SECONDS_FOR_COURSE_TIME
 
@@ -154,7 +154,8 @@ def find_all_data(verbose: bool = False, generator_mode: bool = True,
         timestamp_min = 0
     if timestamp_max is None:
         timestamp_max = int(time()) + 1
-    for level3_data_dir in level3_data_dirs:
+    if SMURF_DATA_DIR is not None:
+        level3_data_dir = os.path.dirname(SMURF_DATA_DIR)
         data_locations_single_dir = find_data(timestamp_min=timestamp_min, timestamp_max=timestamp_max,
                                               level3_data_dir=level3_data_dir, verbose=verbose,
                                               generator_mode=generator_mode)
