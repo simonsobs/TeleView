@@ -7,7 +7,21 @@ import process from "process";
 
 // default parameters
 let mongoURI : string
-if (process.env.NODE_ENV === 'production') {
+if ([
+        'TELEVIEW_MONGODB_ROOT_USERNAME',
+        'TELEVIEW_MONGODB_ROOT_PASSWORD',
+        'TELEVIEW_MONGODB_HOST',
+        'TELEVIEW_MONGODB_PORT',
+    ].every((x) => {
+        console.log('Environment variables', x, process.env[x])
+        return  !!process.env[x]
+    })) {
+    mongoURI = 'mongodb://' +
+        process.env.TELEVIEW_MONGODB_ROOT_USERNAME + ':' + process.env.TELEVIEW_MONGODB_ROOT_PASSWORD +
+        '@' + process.env.TELEVIEW_MONGODB_HOST + ':' + process.env.TELEVIEW_MONGODB_PORT +
+        '/?authMechanism=DEFAULT'
+} else if (process.env.NODE_ENV === 'production') {
+    console.log("Using Docker Production MongoDB URI")
     mongoURI = 'mongodb://user:pass@host.docker.internal:27017/?authMechanism=DEFAULT'
 } else {
     mongoURI = 'mongodb://user:pass@localhost:27017/?authMechanism=DEFAULT'
