@@ -18,7 +18,7 @@ test_data_location_for_default = os.path.join(teleview_dir, 'test_data', 'smurf'
 # get the data locations from the environment variable TELEVIEW_LEVEL3_DATA_DIRECTORIES
 SMURF_DATA_DIR = os.environ.get('TELEVIEW_SMURF_DATA_DIR', test_data_location_for_default)
 
-EXTRA_TIME_SECONDS_FOR_COURSE_TIME = 60 * 60 * 12  # 12 hours
+EXTRA_TIME_SECONDS_FOR_COARSE_TIME = 60 * 60 * 12  # 12 hours
 SEND_PROCESS_STATUS = True
 
 REPORTS_STATUS_TIMEOUT_SECONDS = 7  # 7 seconds

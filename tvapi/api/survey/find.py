@@ -4,14 +4,14 @@ from typing import List, Dict, Tuple, NamedTuple, Optional, Union
 
 from api.mongo.configs import SMURF_DATA_DIR
 from api.mongo.configs import USE_RELATIVE_PATH, EXPECTED_OUTPUT_DIR_NAMES, SEND_PROCESS_STATUS, \
-    EXTRA_TIME_SECONDS_FOR_COURSE_TIME
+    EXTRA_TIME_SECONDS_FOR_COARSE_TIME
 
 
 all_found_action_types = set()
 
 
-def convert_course_time_to_timestamp(course_time: int) -> int:
-    return int(str(course_time) + '00000')
+def convert_coarse_time_to_timestamp(coarse_time: int) -> int:
+    return int(str(coarse_time) + '00000')
 
 
 def get_timestamp_max_from_now() -> int:
@@ -34,12 +34,12 @@ def parse_ufm_name(ufm_dir: str) -> Tuple[str, int]:
 
 
 def parse_action_name(action_dir: str) -> Tuple[Union[int, None], str]:
-    time_stamp_str, action_type = action_dir.split('_', 1)
-    if time_stamp_str.lower().strip() == 'none':
-        time_stamp = None
+    timestamp_str, action_type = action_dir.split('_', 1)
+    if timestamp_str.lower().strip() == 'none':
+        timestamp = None
     else:
-        time_stamp = int(time_stamp_str)
-    return time_stamp, action_type
+        timestamp = int(timestamp_str)
+    return timestamp, action_type
 
 
 def get_results_files(parent_dir: str) -> Dict[str, List[str]]:
@@ -58,12 +58,13 @@ def get_results_files(parent_dir: str) -> Dict[str, List[str]]:
 
 
 class SmurfDataLocation(NamedTuple):
-    time_stamp_course: int
-    time_stamp: Union[int, None]
+    timestamp_coarse: int
+    timestamp: Union[int, None]
     ufm_letter: str
     ufm_number: int
     action_type: str
     path: str
+    ufm_label: str
     outputs: Optional[List[str]] = None
     plots: Optional[List[str]] = None
 
@@ -85,22 +86,22 @@ def smurf(timestamp_min: int, timestamp_max: int, smurf_data_path: str, verbose:
 
     if verbose:
         print(f"  Scrapping smurf data from {smurf_data_path}")
-    for course_time_int in get_time_dirs(parent_dir=smurf_data_path):
-        course_time_stamp_for_compare_min = convert_course_time_to_timestamp(course_time_int)
-        course_time_stamp_for_compare_max = course_time_stamp_for_compare_min + 100000 \
-                                            + EXTRA_TIME_SECONDS_FOR_COURSE_TIME
-        if course_time_stamp_for_compare_min < timestamp_min or course_time_stamp_for_compare_max > timestamp_max:
+    for coarse_time_int in get_time_dirs(parent_dir=smurf_data_path):
+        coarse_timestamp_for_compare_min = convert_coarse_time_to_timestamp(coarse_time_int)
+        coarse_timestamp_for_compare_max = coarse_timestamp_for_compare_min + 100000 \
+                                            + EXTRA_TIME_SECONDS_FOR_COARSE_TIME
+        if coarse_timestamp_for_compare_min < timestamp_min or coarse_timestamp_for_compare_max > timestamp_max:
             # the data is likely to be outside the data is outside the requested time range
             continue
-        full_path_course_time_dir = os.path.join(smurf_data_path, str(course_time_int))
-        for ufm_dir in get_ufm_dirs(parent_dir=full_path_course_time_dir):
+        full_path_coarse_time_dir = os.path.join(smurf_data_path, str(coarse_time_int))
+        for ufm_dir in get_ufm_dirs(parent_dir=full_path_coarse_time_dir):
             ufm_letter, ufm_number = parse_ufm_name(ufm_dir)
-            full_path_ufm_dir = os.path.join(full_path_course_time_dir, ufm_dir)
+            full_path_ufm_dir = os.path.join(full_path_coarse_time_dir, ufm_dir)
             for action_dir in os.listdir(full_path_ufm_dir):
                 full_path_action_dir = os.path.join(full_path_ufm_dir, action_dir)
-                time_stamp_int, action_type = parse_action_name(action_dir)
-                if isinstance(time_stamp_int, int):
-                    if time_stamp_int < timestamp_min or time_stamp_int > timestamp_max:
+                timestamp_int, action_type = parse_action_name(action_dir)
+                if isinstance(timestamp_int, int):
+                    if timestamp_int < timestamp_min or timestamp_int > timestamp_max:
                         # this data is outside the requested time range
                         continue
                 data_files_by_type = get_results_files(parent_dir=full_path_action_dir)
@@ -114,12 +115,13 @@ def smurf(timestamp_min: int, timestamp_max: int, smurf_data_path: str, verbose:
                 if not path_formatted.endswith('/'):
                     path_formatted = path_formatted + '/'
                 yield SmurfDataLocation(
-                    time_stamp_course=course_time_int,
-                    time_stamp=time_stamp_int,
+                    timestamp_coarse=coarse_time_int,
+                    timestamp=timestamp_int,
                     ufm_letter=ufm_letter,
                     ufm_number=ufm_number,
                     action_type=action_type,
                     path=path_formatted,
+                    ufm_label=f"{ufm_letter.upper()}v{ufm_number}",
                     outputs=data_files_by_type['outputs'],
                     plots=data_files_by_type['plots'],
                 )

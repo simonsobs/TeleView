@@ -2,33 +2,10 @@ import {timestamp} from "yaml/dist/schema/yaml-1.1/timestamp";
 
 const {MongoClient} = require('mongodb');
 import * as mongoDB from "mongodb";
-import process from "process";
+import {mongoURI, primary_database, primary_collection, TELEVIEW_VERBOSE} from "@/utils/config";
 
 
-// default parameters
-let mongoURI : string
-if ([
-        'TELEVIEW_MONGODB_ROOT_USERNAME',
-        'TELEVIEW_MONGODB_ROOT_PASSWORD',
-        'TELEVIEW_MONGODB_HOST',
-        'TELEVIEW_MONGODB_PORT',
-    ].every((x) => {
-        console.log('Environment variables', x, process.env[x])
-        return  !!process.env[x]
-    })) {
-    mongoURI = 'mongodb://' +
-        process.env.TELEVIEW_MONGODB_ROOT_USERNAME + ':' + process.env.TELEVIEW_MONGODB_ROOT_PASSWORD +
-        '@' + process.env.TELEVIEW_MONGODB_HOST + ':' + process.env.TELEVIEW_MONGODB_PORT +
-        '/?authMechanism=DEFAULT'
-} else if (process.env.NODE_ENV === 'production') {
-    console.log("Using Docker Production MongoDB URI")
-    mongoURI = 'mongodb://user:pass@host.docker.internal:27017/?authMechanism=DEFAULT'
-} else {
-    mongoURI = 'mongodb://user:pass@localhost:27017/?authMechanism=DEFAULT'
-}
-console.log("Mongo URI:", mongoURI)
-const primary_database = 'files'
-const primary_collection = 'smurf'
+
 // the client connection
 const client = new MongoClient(mongoURI);
 client.connect();
@@ -70,11 +47,12 @@ async function listActionTypes(client: mongoDB.MongoClient) : Promise<Array<stri
     return collection.distinct('action_type');
 }
 
-async function listCourseTimeStamps(client: mongoDB.MongoClient) : Promise<Array<number>> {
-    console.log("  Query: ListCourseTimeStamps")
+
+async function listCoarseTimeStamps(client: mongoDB.MongoClient) : Promise<Array<number>> {
+    console.log("  Query: ListCoarseTimeStamps")
     const collection = await getCollection(client)
-    const time_stamps = await collection.distinct('time_stamp_course');
-    return time_stamps.map((x: string) => parseInt(x));
+    const timestamps = await collection.distinct('timestamp_coarse');
+    return timestamps.map((x: string) => parseInt(x));
 }
 
 
@@ -91,11 +69,11 @@ async function mongoQuery(query: (client: mongoDB.MongoClient) => any) : Promise
 // scripts for data retrieval
 export default async function getDataMap() : Promise<Map<string, any>> {
     const actionTypesPromise = mongoQuery(listActionTypes)
-    const courseTimeStampsPromise = mongoQuery(listCourseTimeStamps)
-    const promiseArray  = await Promise.all([actionTypesPromise, courseTimeStampsPromise]);
+    const coarseTimeStampsPromise = mongoQuery(listCoarseTimeStamps)
+    const promiseArray  = await Promise.all([actionTypesPromise, coarseTimeStampsPromise]);
     return new Map([
         ["actionTypes", promiseArray[0]],
-        ["courseTimeStamps", promiseArray[1]]
+        ["coarseTimeStamps", promiseArray[1]]
     ])
 }
 
@@ -103,22 +81,22 @@ export async function listTimesPerAction(action_type: string) : Promise<Array<nu
     const singleActionQuery = async (client: mongoDB.MongoClient): Promise<Array<number>> => {
         console.log("  Query: ListTimesPerAction: ", action_type)
         const collection = await getCollection(client)
-        const time_stamps = await collection.distinct('time_stamp', {'action_type': action_type});
-        return time_stamps.map((x: string) => parseInt(x));
+        const timestamps = await collection.distinct('timestamp', {'action_type': action_type});
+        return timestamps.map((x: string) => parseInt(x));
     }
     return await mongoQuery(singleActionQuery)
 }
 
 
 export async function getCursorPerFilter(action_type: string | undefined,
-                                        time_stamp: number | undefined,
-                                        time_stamp_course: number | undefined,
+                                        timestamp: number | undefined,
+                                        timestamp_coarse: number | undefined,
                                         ufm_letter: string | undefined,
                                         ufm_number: number | undefined) : Promise<mongoDB.FindCursor> {
     let filter : {[key: string]: string | number} = {}
     if (action_type) {filter['action_type'] = action_type}
-    if (time_stamp) {filter['time_stamp'] = time_stamp}
-    if (time_stamp_course) {filter['time_stamp_course'] = time_stamp_course}
+    if (timestamp) {filter['timestamp'] = timestamp}
+    if (timestamp_coarse) {filter['timestamp_coarse'] = timestamp_coarse}
     if (ufm_letter) {filter['ufm_letter'] = ufm_letter}
     if (ufm_number) {filter['ufm_number'] = ufm_number}
     const singleActionQuery = async (client: mongoDB.MongoClient): Promise<mongoDB.FindCursor> => {

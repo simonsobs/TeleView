@@ -6,7 +6,7 @@ function getDate(timestamp: number): [string, Number] {
     let timestampAsString: string = timestamp.toString()
     let timestampFull: number
     if (timestampAsString.length === 5) {
-        // This is a course (approximately per-day) unix timestamp, so we need to add 5 zeros to the end
+        // This is a coarse (approximately per-day) unix timestamp, so we need to add 5 zeros to the end
         timestampAsString = timestampAsString + '00000'
         timestampFull = parseInt(timestampAsString)
 
