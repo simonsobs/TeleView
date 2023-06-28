@@ -87,18 +87,25 @@ export async function listTimesPerAction(action_type: string) : Promise<Array<nu
     return await mongoQuery(singleActionQuery)
 }
 
-
-export async function getCursorPerFilter(action_type: string | undefined,
-                                        timestamp: number | undefined,
-                                        timestamp_coarse: number | undefined,
-                                        ufm_letter: string | undefined,
-                                        ufm_number: number | undefined) : Promise<mongoDB.FindCursor> {
-    let filter : {[key: string]: string | number} = {}
-    if (action_type) {filter['action_type'] = action_type}
-    if (timestamp) {filter['timestamp'] = timestamp}
-    if (timestamp_coarse) {filter['timestamp_coarse'] = timestamp_coarse}
-    if (ufm_letter) {filter['ufm_letter'] = ufm_letter}
-    if (ufm_number) {filter['ufm_number'] = ufm_number}
+function getFilterElement(element: string | number | Array< string | number >) : string | number | { '$in': Array<string | number> } {
+    if (typeof element === 'string') {
+        return element
+    } else if (typeof element === 'number') {
+        return element
+    }
+    return {'$in': element}
+}
+export async function getCursorPerFilter(action_type: string | undefined | Array< string | number >,
+                                        timestamp: number | undefined | Array< string | number >,
+                                        timestamp_coarse: number | undefined | Array< string | number >,
+                                        ufm_letter: string | undefined  | Array< string | number >,
+                                        ufm_number: number | undefined | Array< string | number >) : Promise<mongoDB.FindCursor> {
+    let filter : {[key: string]: string | number | { '$in': Array<string | number> }} = {}
+    if (action_type) {filter['action_type'] = getFilterElement(action_type)}
+    if (timestamp) {filter['timestamp'] = getFilterElement(timestamp)}
+    if (timestamp_coarse) {filter['timestamp_coarse'] = getFilterElement(timestamp_coarse)}
+    if (ufm_letter) {filter['ufm_letter'] = getFilterElement(ufm_letter)}
+    if (ufm_number) {filter['ufm_number'] = getFilterElement(ufm_number)}
     const singleActionQuery = async (client: mongoDB.MongoClient): Promise<mongoDB.FindCursor> => {
         console.log("  Query: getCursorPerFilter, Filter: ", filter)
         const collection = await getCollection(client)
