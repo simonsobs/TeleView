@@ -24,10 +24,11 @@ function indexElement(
     indexMin: number,
     indexMax: number,
     isCurrent: boolean,
+    keyType: string,
 ): React.ReactElement {
     if (indexMax === indexMin) {
         return (
-            <div className={documentNavCellCSS} key={'null_modifier_no_state_change' + indexMin}>
+            <div className={documentNavCellCSS} key={'null_modifier_no_state_change' + indexMin + keyType}>
                 {" "}
             </div>
         )
@@ -44,7 +45,9 @@ function indexElement(
         return (
             <Link href={url}
                   key={'modifier_state_change_link' + url}
-                  className={documentNavCellCSS + " text-tvblue hover:text-tvpurple hover:bg-tvblue"}>
+                  className={documentNavCellCSS + " text-tvblue hover:text-tvpurple hover:bg-tvblue"}
+                  prefetch={false}
+            >
                 {indexMin + 1} - {indexMax}
             </Link>
         )
@@ -74,11 +77,11 @@ function documentIndexNav(
             <div className={documentNavCellCSS}>Current</div>
             <div className={documentNavCellCSS}>Next</div>
             <div className={documentNavCellCSS}>Last</div>
-            {indexElement(modifierState, filterState, 0, firstIndexMax, false)}
-            {indexElement(modifierState, filterState, prevIndexMin, prevIndexMax, false)}
-            {indexElement(modifierState, filterState, viewIndexMin, viewIndexMax, true)}
-            {indexElement(modifierState, filterState, nextIndexMin, nextIndexMax, false)}
-            {indexElement(modifierState, filterState, lastIndexMin, indexMax, false)}
+            {indexElement(modifierState, filterState, 0, firstIndexMax, false, "first")}
+            {indexElement(modifierState, filterState, prevIndexMin, prevIndexMax, false, "prev")}
+            {indexElement(modifierState, filterState, viewIndexMin, viewIndexMax, true, "current")}
+            {indexElement(modifierState, filterState, nextIndexMin, nextIndexMax, false, "next")}
+            {indexElement(modifierState, filterState, lastIndexMin, indexMax, false, "last")}
         </div>
     )
 }
@@ -124,6 +127,7 @@ export default function NavTable({docArray, modifierState, filterState, deltaInd
                                     className="table-row hover:bg-tvpurple hover:text-tvblue hover:text-xl"
                                     key={timestamp.toString() + actionType + ufmLabel + timestampCoarse.toString()}
                                     href={linkString}
+                                    prefetch={false}
                                 >
                                     <div className="table-cell border px-4 py-2">
                                         {timestamp}

@@ -26,6 +26,7 @@ function getLink(ufm_letter: string, ufm_number: number, timestamp: number | nul
             className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
             rel="noopener noreferrer"
             key={ufmNumber + '_' + timeStamp + '_' + actionType}
+            prefetch={false}
         >
             <h2 className={`mb-3 text-2xl font-semibold`}>
                 {displayString}
@@ -35,7 +36,6 @@ function getLink(ufm_letter: string, ufm_number: number, timestamp: number | nul
             </h2>
         </Link>
     )
-
 }
 
 export default function ufmLink(ufm_number: number, docs: Array<mongoDB.Document> | undefined): React.ReactNode {

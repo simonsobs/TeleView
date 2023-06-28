@@ -112,7 +112,7 @@ function encodeToURL(someState: FilterState, primaryOperator: string = "!", seco
 
 
 export function genFilterURL(modifierState: FilterState, filterState: FilterState): string {
-    let filterURL = encodeToURL(modifierState, "*", "$")
+    let filterURL = "/" + encodeToURL(modifierState, "*", "$")
     filterURL += encodeToURL(filterState, "!", "$")
     return filterURL
 }
@@ -202,7 +202,9 @@ export default function filterUpdateLink(
         <Link href={uri}
               className="group rounded-lg border border-transparent  transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
               rel="noopener noreferrer"
-              key={"Filter_database_" + uri}>
+              key={"Filter_database_" + uri}
+              prefetch={false}
+        >
             <h2 className={`text-xl text-tvblue font-semibold`}>
                 {toAdd
                     ?
