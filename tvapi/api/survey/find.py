@@ -6,6 +6,8 @@ from api.mongo.configs import SMURF_DATA_DIR
 from api.mongo.configs import USE_RELATIVE_PATH, EXPECTED_OUTPUT_DIR_NAMES, SEND_PROCESS_STATUS, \
     EXTRA_TIME_SECONDS_FOR_COARSE_TIME
 
+from api.survey.logging import log_excluded_dir
+
 
 all_found_action_types = set()
 
@@ -59,7 +61,7 @@ def get_results_files(parent_dir: str) -> Dict[str, List[str]]:
 
 class SmurfDataLocation(NamedTuple):
     timestamp_coarse: int
-    timestamp: Union[int, None]
+    timestamp: int
     ufm_letter: str
     ufm_number: int
     action_type: str
@@ -83,7 +85,6 @@ def data_scraper(func):
 
 @data_scraper
 def smurf(timestamp_min: int, timestamp_max: int, smurf_data_path: str, verbose: bool = False):
-
     if verbose:
         print(f"  Scrapping smurf data from {smurf_data_path}")
     for coarse_time_int in get_time_dirs(parent_dir=smurf_data_path):
@@ -104,6 +105,12 @@ def smurf(timestamp_min: int, timestamp_max: int, smurf_data_path: str, verbose:
                     if timestamp_int < timestamp_min or timestamp_int > timestamp_max:
                         # this data is outside the requested time range
                         continue
+                else:
+                    # this is a special case where the timestamp is None
+                    # add this file to the ignored folders database
+                    log_excluded_dir(dir_type='smurf', dir_path=full_path_action_dir,
+                                     reason='Not able to parse timestamp, timestamp was None')
+                    continue
                 data_files_by_type = get_results_files(parent_dir=full_path_action_dir)
                 all_found_action_types.add(action_type)
                 if USE_RELATIVE_PATH:

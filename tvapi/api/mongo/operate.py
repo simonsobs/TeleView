@@ -1,5 +1,5 @@
 import datetime
-from typing import Optional
+from typing import Optional, Dict
 
 from api.mongo.connect import MongoConnection
 
@@ -45,6 +45,12 @@ class MongoOperate(MongoConnection):
         self.select(collection_name=collection_name, database_name=database_name)
         collection = self.get_collection()
         collection.insert_one(document)
+
+    def update_or_insert_one(self, doc_filter: Dict[str, any], update_map: Dict[str, any],
+                             collection_name: Optional[str] = None, database_name: Optional[str] = None):
+        self.select(collection_name=collection_name, database_name=database_name)
+        collection = self.get_collection()
+        collection.update_one(filter=doc_filter, update={"$set": update_map}, upsert=True)
 
     def initialize_test_data(self):
         self.collection_remove_if_exists(collection_name=self.test_collection_name,
