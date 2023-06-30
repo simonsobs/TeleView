@@ -2,15 +2,16 @@ import React from "react";
 import Link from "next/link";
 import mongo from "mongodb";
 
-import {FilterState, genFilterURL} from "@/components/MenuLinks/filter";
+import {ModifierState, genFilterURL} from "@/utils/url/filter";
+import {GetCursorPerFilterInput} from "@/utils/mongo/query";
 
 
 const documentNavCellCSS = "px-4 border border-tvorange text-center"
 
 export type NavTableInput = {
     docArray: Array<mongo.Document>,
-    modifierState: FilterState,
-    filterState: FilterState,
+    modifierState: ModifierState,
+    filterState: GetCursorPerFilterInput,
     deltaIndex: number,
     viewIndexMin: number,
     viewIndexMax: number,
@@ -19,8 +20,8 @@ export type NavTableInput = {
 
 
 function indexElement(
-    modifierState: FilterState,
-    filterState: FilterState,
+    modifierState: ModifierState,
+    filterState: GetCursorPerFilterInput,
     indexMin: number,
     indexMax: number,
     isCurrent: boolean,
@@ -39,8 +40,8 @@ function indexElement(
             </div>
         )
     } else {
-        const modifierStateNew: FilterState = new Map(modifierState)
-        modifierStateNew.set("document_range", new Set([indexMin, indexMax]))
+        const modifierStateNew: ModifierState = { ...modifierState }
+        modifierStateNew.document_range = new Set([indexMin, indexMax])
         const url = genFilterURL(modifierStateNew, filterState)
         return (
             <Link href={url}
@@ -55,8 +56,8 @@ function indexElement(
 }
 
 function documentIndexNav(
-    modifierState: FilterState,
-    filterState: FilterState,
+    modifierState: ModifierState,
+    filterState: GetCursorPerFilterInput,
     deltaIndex:number,
     viewIndexMin:number,
     viewIndexMax:number,
@@ -101,7 +102,7 @@ export default function NavTable({docArray, modifierState, filterState, deltaInd
             <div className=" h-min text-tvgry bg-tvbrown">
                 {tableNavBar}
             </div>
-            <div className="flex-1 flex justify-center text-tvgry border-4 bg-tvbrown border-tvgreen overflow-auto">
+            <div className="flex justify-center text-tvgry border-4 bg-tvbrown border-tvgreen overflow-auto">
                 <div className="table-auto">
                     <div className="table-header-group">
                         <div className="table-row">

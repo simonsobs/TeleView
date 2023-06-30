@@ -5,11 +5,11 @@ import clientPromise from "@/utils/mongo/client";
 
 
 // database, collection, and query utilities
-async function getCollection(database : string = primary_database,
-                             collection: string = primary_collection) :
+async function getCollection(databaseName : string = primary_database,
+                             collectionName: string = primary_collection) :
     Promise<mongoDB.Collection> {
     const client = await clientPromise
-    return client.db(database).collection(collection);
+    return client.db(databaseName).collection(collectionName);
 }
 
 
@@ -23,6 +23,15 @@ async function listDatabases() : Promise<mongoDB.ListDatabasesResult> {
 }
 
 
+async function listDistinct(key: string, databaseName : string, collectionName: string) : Promise<Array<string | number>> {
+    if (TELEVIEW_VERBOSE) {
+        console.log("  Query: ListDistinct: ", key)
+    }
+    const collection = await getCollection(databaseName, collectionName)
+    return collection.distinct(key);
+}
+
+
 async function listActionTypes() : Promise<Array<string>> {
     if (TELEVIEW_VERBOSE) {
         console.log("  Query: ListActionTypes")
@@ -32,9 +41,9 @@ async function listActionTypes() : Promise<Array<string>> {
 }
 
 
-async function listCoarseTimeStamps() : Promise<Array<number>> {
+async function listCoarseTimestamps() : Promise<Array<number>> {
     if (TELEVIEW_VERBOSE) {
-        console.log("  Query: ListCoarseTimeStamps")
+        console.log("  Query: ListCoarseTimestamps")
     }
     const collection = await getCollection()
     const timestamps = await collection.distinct('timestamp_coarse');
@@ -53,13 +62,20 @@ async function mongoQuery(query: () => any) : Promise<any> {
 
 
 // scripts for data retrieval
-export default async function getDataMap() : Promise<Map<string, any>> {
+export default async function getDataMap(databaseName : string = primary_database,
+                                         collectionName: string = primary_collection) : Promise<Map<string, any>> {
     const actionTypesPromise = mongoQuery(listActionTypes)
-    const coarseTimeStampsPromise = mongoQuery(listCoarseTimeStamps)
-    const promiseArray  = await Promise.all([actionTypesPromise, coarseTimeStampsPromise]);
+    const coarseTimestampsPromise = mongoQuery(listCoarseTimestamps)
+    const timestampsPromise = mongoQuery(() => listDistinct('timestamp', databaseName, collectionName))
+    const promiseArray  = await Promise.all([
+        actionTypesPromise,
+        coarseTimestampsPromise,
+        timestampsPromise
+    ]);
     return new Map([
         ["actionTypes", promiseArray[0]],
-        ["coarseTimeStamps", promiseArray[1]]
+        ["coarseTimestamps", promiseArray[1]],
+        ["timestamps", promiseArray[2]],
     ])
 }
 
@@ -75,25 +91,38 @@ export async function listTimesPerAction(action_type: string) : Promise<Array<nu
     return await mongoQuery(singleActionQuery)
 }
 
-function getFilterElement(element: string | number | Array< string | number >) : string | number | { '$in': Array<string | number> } {
+function getFilterElement(element: string | number | Set< string | number >)
+    : string | number | { '$in': Array<string | number> } {
     if (typeof element === 'string') {
         return element
     } else if (typeof element === 'number') {
         return element
     }
-    return {'$in': element}
+    return {'$in': Array.from(element)}
 }
-export async function getCursorPerFilter(action_type: string | undefined | Array< string | number >,
-                                        timestamp: number | undefined | Array< string | number >,
-                                        timestamp_coarse: number | undefined | Array< string | number >,
-                                        ufm_letter: string | undefined  | Array< string | number >,
-                                        ufm_number: number | undefined | Array< string | number >) : Promise<mongoDB.FindCursor> {
+
+
+export type GetCursorPerFilterInput = {
+    action_type: undefined | Set<string>,
+    timestamp: undefined | Set<number>,
+    timestamp_coarse: undefined | Set<number>,
+    ufm_letter: undefined  | Set<string>,
+    ufm_number: undefined | Set<number>,
+    timestamp_range: undefined | Array<[number, number]>
+}
+
+export async function getCursorPerFilter({
+                                             action_type, timestamp, timestamp_coarse,
+                                             ufm_letter, ufm_number, timestamp_range
+    }: GetCursorPerFilterInput )
+    : Promise<mongoDB.FindCursor> {
     let filter : {[key: string]: string | number | { '$in': Array<string | number> }} = {}
     if (action_type) {filter['action_type'] = getFilterElement(action_type)}
     if (timestamp) {filter['timestamp'] = getFilterElement(timestamp)}
     if (timestamp_coarse) {filter['timestamp_coarse'] = getFilterElement(timestamp_coarse)}
     if (ufm_letter) {filter['ufm_letter'] = getFilterElement(ufm_letter)}
     if (ufm_number) {filter['ufm_number'] = getFilterElement(ufm_number)}
+
     const singleActionQuery = async (): Promise<mongoDB.FindCursor> => {
         if (TELEVIEW_VERBOSE) {
             console.log("  Query: getCursorPerFilter, Filter: ", filter)

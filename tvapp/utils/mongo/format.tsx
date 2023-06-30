@@ -1,5 +1,4 @@
 import * as mongoDB from "mongodb";
-import {FilterState} from "@/components/MenuLinks/filter";
 import mongo from "mongodb";
 
 
@@ -17,15 +16,6 @@ export async function mapBy(cursorPerAction: mongoDB.FindCursor, keyType: string
         }
     }
     return byTimestamp
-}
-
-export function getFilterValues(typeToCheck: string, filterState: FilterState): Array< string | number > | undefined {
-    const filterValues = filterState.get(typeToCheck)
-    if (filterValues=== undefined) {
-        return undefined
-    } else {
-        return Array.from(filterValues)
-    }
 }
 
 export async function returnDocumentsSlice(start: number = 0, end: number = 100, dataCursor: mongo.FindCursor): Promise<[Array<mongo.Document>, number]> {

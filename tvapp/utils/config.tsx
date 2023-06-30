@@ -12,6 +12,9 @@ if (TELEVIEW_VERBOSE_RAW === undefined) {
 // the file system for target files of the database
 export const filesBaseURI = 'http://localhost/files/';
 
+// The data view defaults
+export const documentLimitDefault = 100
+
 // MongoDB database Parameters
 export let mongoURI : string
 if ([
