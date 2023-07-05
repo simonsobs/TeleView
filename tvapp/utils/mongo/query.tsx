@@ -91,14 +91,37 @@ export async function listTimesPerAction(action_type: string) : Promise<Array<nu
     return await mongoQuery(singleActionQuery)
 }
 
-function getFilterElement(element: string | number | Set< string | number >)
-    : string | number | { '$in': Array<string | number> } {
-    if (typeof element === 'string') {
-        return element
-    } else if (typeof element === 'number') {
-        return element
+
+type MongoFindFilter = {[key: string]: string | number | {[key: string]: any} | Array<any>}
+
+
+function wrapFilter(wrapType: string, filters: Array<any>): MongoFindFilter {
+    if (filters.length === 1) {
+        return filters[0]
+    } else if (filters.length === 0) {
+        return {}
+    } else {
+        return {[wrapType]: filters}
     }
-    return {'$in': Array.from(element)}
+}
+
+
+function getMatchFilter(matchType: string, match: string | number | Set< string | number >): MongoFindFilter {
+    let matchObject: MongoFindFilter | string | number
+    if (typeof match === 'string' || typeof match === 'number') {
+        matchObject =  match
+    } else {
+        matchObject = wrapFilter('$in', Array.from(match))
+    }
+    return {[matchType]: matchObject}
+}
+
+
+function getRangeFilter(targetName: string, ranges: Array<[number, number]>): MongoFindFilter {
+    const rangeArray = ranges.map((range: [number, number]) => {
+        return {[targetName]: {'$gte': range[0], '$lte': range[1]}}
+    })
+    return wrapFilter('$or', rangeArray)
 }
 
 
@@ -111,18 +134,25 @@ export type GetCursorPerFilterInput = {
     timestamp_range: undefined | Array<[number, number]>
 }
 
+
+
 export async function getCursorPerFilter({
-                                             action_type, timestamp, timestamp_coarse,
-                                             ufm_letter, ufm_number, timestamp_range
+                                             action_type,
+                                             timestamp,
+                                             timestamp_coarse,
+                                             ufm_letter,
+                                             ufm_number,
+                                             timestamp_range
     }: GetCursorPerFilterInput )
     : Promise<mongoDB.FindCursor> {
-    let filter : {[key: string]: string | number | { '$in': Array<string | number> }} = {}
-    if (action_type) {filter['action_type'] = getFilterElement(action_type)}
-    if (timestamp) {filter['timestamp'] = getFilterElement(timestamp)}
-    if (timestamp_coarse) {filter['timestamp_coarse'] = getFilterElement(timestamp_coarse)}
-    if (ufm_letter) {filter['ufm_letter'] = getFilterElement(ufm_letter)}
-    if (ufm_number) {filter['ufm_number'] = getFilterElement(ufm_number)}
-
+    let andFilters: Array<MongoFindFilter> = []
+    if (action_type) {andFilters.push(getMatchFilter('action_type', action_type))}
+    if (timestamp) {andFilters.push(getMatchFilter('timestamp', timestamp))}
+    if (timestamp_coarse) {andFilters.push(getMatchFilter('timestamp_coarse', timestamp_coarse))}
+    if (ufm_letter) {andFilters.push(getMatchFilter('ufm_letter', ufm_letter))}
+    if (ufm_number) {andFilters.push(getMatchFilter('ufm_number', ufm_number))}
+    if (timestamp_range) {andFilters.push(getRangeFilter('timestamp', timestamp_range))}
+    const filter = wrapFilter('$and', andFilters)
     const singleActionQuery = async (): Promise<mongoDB.FindCursor> => {
         if (TELEVIEW_VERBOSE) {
             console.log("  Query: getCursorPerFilter, Filter: ", filter)

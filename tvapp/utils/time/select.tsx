@@ -6,17 +6,28 @@ import React, { useState } from "react";
 import {nowTimestamp, timestampToIsoString, isoStringToTimestamp} from "@/utils/time/time";
 import {filterUpdateURI, ModifierState} from "@/utils/url/filter";
 import {GetCursorPerFilterInput} from "@/utils/mongo/query";
+import {minIsoDate, maxIsoDate, TELEVIEW_VERBOSE} from "@/utils/config";
 
 
 type SelectTimeInput = {
     headerString: string,
     timeValue: number,
+    defaultValue: number,
     setTimeValue: React.Dispatch<React.SetStateAction<number>>
 }
 
 
-function TimeSelect({headerString, timeValue, setTimeValue}: SelectTimeInput) : React.ReactElement {
+function TimeSelect({headerString, timeValue, defaultValue, setTimeValue}: SelectTimeInput) : React.ReactElement {
     const isoTimeString = timestampToIsoString(timeValue)
+    const onChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const value = event.target.value
+        if (value === "") {
+            setTimeValue(defaultValue)
+        } else {
+            setTimeValue(isoStringToTimestamp(value))
+        }
+
+    }
     return (
         <div className="flex flex-row">
             <div className="flex flex-col">
@@ -35,10 +46,10 @@ function TimeSelect({headerString, timeValue, setTimeValue}: SelectTimeInput) : 
                             type="datetime-local"
                             value={isoTimeString}
                             name={headerString +" input timestamp for filter selection"}
-                            onChange={(event) => setTimeValue(isoStringToTimestamp(event.target.value))}
+                            onChange={onChange}
                             key={headerString +" input datetime for filter selection"}
-                            min="1970-01-01T00:00"
-                            max="2099-12-19T23:59"
+                            min={minIsoDate}
+                            max={maxIsoDate}
                     />
                 </div>
             </div>
@@ -60,7 +71,6 @@ export default function SelectTimeRange({suggestedMin, suggestedMax, modifierSta
     const [min, setMin] = useState<number>(suggestedMin ?? 0)
     const [max, setMax] = useState<number>(suggestedMax ?? nowTimestamp())
 
-    console.log("Client side time range selection", min, max)
     return (
         <div className="flex flex-row h-full w-full">
             <div className="text-tvgrey">
@@ -68,11 +78,13 @@ export default function SelectTimeRange({suggestedMin, suggestedMax, modifierSta
                     <TimeSelect
                         headerString={"Min"}
                         timeValue={min}
+                        defaultValue={suggestedMin ?? 0}
                         setTimeValue={setMin}
                     />
                     <TimeSelect
                         headerString={"Max"}
                         timeValue={max}
+                        defaultValue={suggestedMax ?? nowTimestamp()}
                         setTimeValue={setMax}
                     />
                     <Link href={filterUpdateURI(modifierState, filterState, 'timestamp_range', [min, max], true)}>

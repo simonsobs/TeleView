@@ -1,11 +1,12 @@
 import React from "react";
 import Link from 'next/link';
 
+import { simplifyRanges } from "@/utils/time/time";
 import {GetCursorPerFilterInput} from "@/utils/mongo/query";
 import { documentLimitDefault } from "@/utils/config";
 
 const rangeModifierDataTypes = new Set(['document_range'])
-export type ModifierState = { [key: string] : Set<number | string | [number, number]> }
+export type ModifierState = { [key: string] : Set<number | string> | [number, number] }
 
 
 
@@ -107,9 +108,19 @@ function parseModifierString(modifierString: string): ModifierState {
         return {}
     }
     const [modifierPrefix, ...modifiers] = modifierString.split("*")
-    return Object.fromEntries(modifiers.map((singleModifier): [string, Set<number | string | [number, number]>] => {
+    return Object.fromEntries(modifiers.map((singleModifier): [string, Set<number | string> | [number, number]] => {
         const [modifierType, modifierValuesString] = singleModifier.split("%24")  // $
-        return [modifierType, parseSingleModifier(singleModifier)]
+        if (rangeModifierDataTypes.has(modifierType)) {
+            const parseDocumentRange = parseModifierRanges(modifierValuesString)
+            if (parseDocumentRange.length > 0) {
+                return [modifierType, parseDocumentRange[0]]
+            } else {
+                console.log("failed to parse document range")
+                return [modifierType, [0, documentLimitDefault]]
+            }
+        } else {
+            return [modifierType, parseSingleModifier(modifierValuesString)]
+        }
     }))
 
 }
@@ -152,7 +163,7 @@ export function parseFilterURL(filterURL: Array<string> | undefined, verbose: bo
                     filterState.ufm_number = parseSingleModifierNumber(modifierValuesString)
                     break;
                 case "timestamp_range":
-                    filterState.timestamp_range = parseModifierRanges(modifierValuesString)
+                    filterState.timestamp_range = simplifyRanges(parseModifierRanges(modifierValuesString))
                     break;
                 default:
                     break;
@@ -190,7 +201,7 @@ function encodeToURLModifier(modifierState: ModifierState, primaryOperator: stri
         const valueSet = modifierState[key]
         let arrayOperator = "+"
         if (valueSet !== undefined) {
-            if (valueSet.size === 2 && rangeModifierDataTypes.has(key)) {
+            if (Array.isArray(valueSet) && valueSet.length === 2 && rangeModifierDataTypes.has(key)) {
                 arrayOperator = "-"
             }
             const stringValues = getStringArray(valueSet)
@@ -238,7 +249,11 @@ function encodeToURLFilter(filterState: GetCursorPerFilterInput, primaryOperator
                 stateURL += encodeToURFilterKeyValue(key, filterState.ufm_number, primaryOperator, secondaryOperator)
                 break;
             case "timestamp_range":
-                stateURL += encodeToURFilterKeyValue(key, filterState.timestamp_range, primaryOperator, secondaryOperator)
+                let simplifiedTimeStampRange: Array<[number, number]> | undefined = undefined
+                if (filterState.timestamp_range !== undefined) {
+                    simplifiedTimeStampRange = simplifyRanges(filterState.timestamp_range)
+                }
+                stateURL += encodeToURFilterKeyValue(key, simplifiedTimeStampRange, primaryOperator, secondaryOperator)
                 break;
             default:
                 break;
@@ -350,6 +365,83 @@ function addSubtractFilter(filterState: GetCursorPerFilterInput, filterKey: stri
             break;
     }
     return newFilterState
+}
+
+
+export function removeFilter(modifierState: ModifierState, filterState: GetCursorPerFilterInput)
+    : Array<React.ReactElement> {
+    let removeLinks: Array<React.ReactElement> = []
+    for (let filterName of Object.keys(filterState)) {
+        let linksThisType: Array<React.ReactNode> | undefined = undefined
+        switch (filterName) {
+            case "action_type":
+                const filterValuesActionType = filterState.action_type
+                if (filterValuesActionType !== undefined) {
+                    linksThisType = Array.from(filterValuesActionType).map((filterValue) => {
+                        return filterUpdateLink(modifierState, filterState, 'action_type', filterValue, false)
+                    })
+                }
+                break
+            case "timestamp":
+                const filterValuesTimestamp = filterState.timestamp
+                if (filterValuesTimestamp !== undefined) {
+                    linksThisType = Array.from(filterValuesTimestamp).map((filterValue) => {
+                        return filterUpdateLink(modifierState, filterState, 'timestamp', filterValue, false)
+                    })
+                }
+                break
+            case "coarse_timestamp":
+                const filterValuesCoarseTimestamp = filterState.timestamp_coarse
+                if (filterValuesCoarseTimestamp !== undefined) {
+                    linksThisType = Array.from(filterValuesCoarseTimestamp).map((filterValue) => {
+                        return filterUpdateLink(modifierState, filterState, 'timestamp_coarse', filterValue, false)
+                    })
+                }
+                break
+            case "ufm_number":
+                const filterValuesUfmNumber = filterState.ufm_number
+                if (filterValuesUfmNumber !== undefined) {
+                    linksThisType = Array.from(filterValuesUfmNumber).map((filterValue) => {
+                        return filterUpdateLink(modifierState, filterState, 'ufm_number', filterValue, false)
+                    })
+                }
+                break
+            case "ufm_letter":
+                const filterValuesUfmLetter = filterState.ufm_letter
+                if (filterValuesUfmLetter !== undefined) {
+                    linksThisType = Array.from(filterValuesUfmLetter).map((filterValue) => {
+                        return filterUpdateLink(modifierState, filterState, 'ufm_letter', filterValue, false)
+                    })
+                }
+                break
+            case "timestamp_range":
+                const filterValuesTimestampRange = filterState.timestamp_range
+                if (filterValuesTimestampRange !== undefined) {
+                    linksThisType = Array.from(filterValuesTimestampRange).map((filterValue) => {
+                        return filterUpdateLink(modifierState, filterState, 'timestamp_range', filterValue, false)
+                    })
+                }
+                break
+            default:
+                break
+        }
+        if (linksThisType !== undefined) {
+            removeLinks.push(
+                <div className="flex flex-col" key={filterName + "false"}>
+                    <h2 className={`text-3xl text-tvblue font-semibold`}>{filterName}:</h2>
+                    { linksThisType }
+                </div>
+            )
+        }
+    }
+    if (removeLinks.length === 0) {
+        removeLinks.push(
+            <div className="flex flex-col" key={"empty"}>
+                <h2 className={`text-3xl text-tvblue font-semibold`}>No filters set</h2>
+            </div>
+        )
+    }
+    return removeLinks
 }
 
 

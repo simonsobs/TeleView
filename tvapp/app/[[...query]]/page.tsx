@@ -1,8 +1,8 @@
 import React from "react";
-import getDataMap, {getCursorPerFilter, GetCursorPerFilterInput} from "@/utils/mongo/query";
+import getDataMap, {getCursorPerFilter } from "@/utils/mongo/query";
 import { returnDocumentsSlice } from "@/utils/mongo/format";
-import filterUpdateLink, {getCurrentIndexRange, ModifierState, parseFilterURL} from "@/utils/url/filter";
-import { documentLimitDefault } from "@/utils/config";
+import filterUpdateLink, {getCurrentIndexRange, parseFilterURL, removeFilter} from "@/utils/url/filter";
+import {documentLimitDefault, TELEVIEW_VERBOSE} from "@/utils/config";
 import NavTable from "@/components/NavDocs/table";
 import SelectTimeRange from "@/utils/time/select";
 
@@ -11,75 +11,9 @@ import SelectTimeRange from "@/utils/time/select";
 export const revalidate = 0
 
 
-export function removeFilter(modifierState: ModifierState, filterState: GetCursorPerFilterInput)
-    : Array<React.ReactElement> {
-    let removeLinks: Array<React.ReactElement> = []
-    for (let filterName of Object.keys(filterState)) {
-        let linksThisType: Array<React.ReactNode> | undefined = undefined
-        switch (filterName) {
-            case "action_type":
-                const filterValuesActionType = filterState.action_type
-                if (filterValuesActionType !== undefined) {
-                    linksThisType = Array.from(filterValuesActionType).map((filterValue) => {
-                        return filterUpdateLink(modifierState, filterState, 'action_type', filterValue, false)
-                    })
-                }
-                break
-            case "timestamp":
-                const filterValuesTimestamp = filterState.timestamp
-                if (filterValuesTimestamp !== undefined) {
-                    linksThisType = Array.from(filterValuesTimestamp).map((filterValue) => {
-                        return filterUpdateLink(modifierState, filterState, 'timestamp', filterValue, false)
-                    })
-                }
-                break
-            case "coarse_timestamp":
-                const filterValuesCoarseTimestamp = filterState.timestamp_coarse
-                if (filterValuesCoarseTimestamp !== undefined) {
-                    linksThisType = Array.from(filterValuesCoarseTimestamp).map((filterValue) => {
-                        return filterUpdateLink(modifierState, filterState, 'timestamp_coarse', filterValue, false)
-                    })
-                }
-                break
-            case "ufm_number":
-                const filterValuesUfmNumber = filterState.ufm_number
-                if (filterValuesUfmNumber !== undefined) {
-                    linksThisType = Array.from(filterValuesUfmNumber).map((filterValue) => {
-                        return filterUpdateLink(modifierState, filterState, 'ufm_number', filterValue, false)
-                    })
-                }
-                break
-            case "ufm_letter":
-                const filterValuesUfmLetter = filterState.ufm_letter
-                if (filterValuesUfmLetter !== undefined) {
-                    linksThisType = Array.from(filterValuesUfmLetter).map((filterValue) => {
-                        return filterUpdateLink(modifierState, filterState, 'ufm_letter', filterValue, false)
-                    })
-                }
-                break
-            case "timestamp_range":
-                const filterValuesTimestampRange = filterState.timestamp_range
-                if (filterValuesTimestampRange !== undefined) {
-                    console.log('filterValuesTimestampRange', filterValuesTimestampRange)
-                    linksThisType = Array.from(filterValuesTimestampRange).map((filterValue) => {
-                        return filterUpdateLink(modifierState, filterState, 'timestamp_range', filterValue, false)
-                    })
-                }
-        }
-        if (linksThisType !== undefined) {
-            removeLinks.push(
-                <div className="flex flex-col" key={filterName + "false"}>
-                    <h2 className={`text-3xl text-tvblue font-semibold`}>{filterName}:</h2>
-                    { linksThisType }
-                </div>
-            )
-        }
-    }
-    return removeLinks
-}
 export default async function Page({ params }: { params: { query: Array<string> } }) {
     // parse the filter state and modifier(s) from the URL
-    const [modifierState, filterState] = parseFilterURL(params.query, true)
+    const [modifierState, filterState] = parseFilterURL(params.query, TELEVIEW_VERBOSE)
     // Get the data states from the database
     const valuesMap = await getDataMap()
     // Parse Action-types from the database
@@ -106,6 +40,10 @@ export default async function Page({ params }: { params: { query: Array<string> 
     const dataCursor = await getCursorPerFilter(filterState)
     // get a slice of the available documents
     let [startIndex, endIndex] = getCurrentIndexRange(modifierState)
+    if (TELEVIEW_VERBOSE) {
+        console.log("modifierState:", modifierState)
+        console.log("startIndex:", startIndex, "endIndex:", endIndex)
+    }
     const [docArray, maxIndex] = await returnDocumentsSlice(startIndex, endIndex, dataCursor)
     endIndex = Math.min(endIndex, maxIndex)
     const indexKeyString = startIndex.toString() + "_" + endIndex.toString()

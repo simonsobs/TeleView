@@ -41,7 +41,7 @@ function indexElement(
         )
     } else {
         const modifierStateNew: ModifierState = { ...modifierState }
-        modifierStateNew.document_range = new Set([indexMin, indexMax])
+        modifierStateNew.document_range = [indexMin, indexMax]
         const url = genFilterURL(modifierStateNew, filterState)
         return (
             <Link href={url}

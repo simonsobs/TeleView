@@ -14,6 +14,8 @@ export const filesBaseURI = 'http://localhost/files/';
 
 // The data view defaults
 export const documentLimitDefault = 100
+export const minIsoDate = "1970-01-01T00:00:00"
+export const maxIsoDate = "2100-01-01T00:00:00"
 
 // MongoDB database Parameters
 export let mongoURI : string

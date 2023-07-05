@@ -1,8 +1,8 @@
 import React from "react";
 import * as mongoDB from "mongodb";
-import {getCursorPerFilter} from "@/utils/mongo/query";
+import {getCursorPerFilter, GetCursorPerFilterInput} from "@/utils/mongo/query";
 import dataFileLink from "@/components/MenuLinks/data_files";
-import {filesBaseURI} from "@/utils/config";
+import {filesBaseURI, TELEVIEW_VERBOSE} from "@/utils/config";
 import {fetchImage} from "@/components/image/get_image";
 
 
@@ -16,8 +16,16 @@ export default async function Page({ params }: { params: { id: Array<string> } }
     let [ufm_letter, ufm_number_sting] = ufm_id.split('v', 2)
     const ufm_number = parseInt(ufm_number_sting)
     const timestamp = parseInt(timestamp_sting)
-    console.log("data View:", 'ufm_letter:', ufm_letter, ', ufm_number:', ufm_number, ', timestamp:', timestamp, ', action_type:', action_type)
-    const cursor: mongoDB.FindCursor = await getCursorPerFilter(action_type, timestamp, undefined, ufm_letter, ufm_number)
+    const filterState: GetCursorPerFilterInput = {
+        action_type: new Set([action_type]),
+        timestamp: new Set([timestamp]),
+        ufm_letter: new Set([ufm_letter]),
+        ufm_number: new Set([ufm_number]),
+        timestamp_range: undefined,
+        timestamp_coarse: undefined,
+    }
+
+    const cursor: mongoDB.FindCursor = await getCursorPerFilter(filterState)
     const documents: Array<object> = await cursor.toArray();
     if (documents.length === 0) {
         throw new Error("No data was was found for this query")
@@ -25,6 +33,10 @@ export default async function Page({ params }: { params: { id: Array<string> } }
         throw new Error("More than one data point was found for this query")
     }
     const document: object = documents[0]
+    if (TELEVIEW_VERBOSE) {
+        console.log("data View:", 'ufm_letter:', ufm_letter, ', ufm_number:', ufm_number, ', timestamp:', timestamp, ', action_type:', action_type)
+        console.log(document)
+    }
     // @ts-ignore
     const baseURI: string = filesBaseURI + document['path']
     // @ts-ignore
@@ -32,14 +44,13 @@ export default async function Page({ params }: { params: { id: Array<string> } }
     // @ts-ignore
     const plotFiles: Array<string> = document['plots']
     let dataURIs: Array<string> = []
-    if (dataFiles !== undefined) {
+    if (dataFiles) {
         dataURIs = dataFiles.map((file: string) => baseURI + 'outputs/' + file)
     }
     let plotURIs: Array<string> = []
     if (plotFiles) {
         plotURIs = plotFiles.map((file: string) => baseURI + 'plots/' + file)
     }
-    console.log(document)
     return (
         <main className="flex min-h-screen flex-col items-center justify-between p-24">
             <div className="z-10 w-full max-w-5xl items-center justify-between font-mono text-sm lg:flex">
@@ -49,7 +60,6 @@ export default async function Page({ params }: { params: { id: Array<string> } }
             </div>
             {plotURIs.map(plotURI => fetchImage(plotURI))}
             {dataURIs.map(dataURI => dataFileLink(dataURI))}
-
         </main>
     )
 }
