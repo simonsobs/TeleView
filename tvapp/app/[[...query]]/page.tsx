@@ -1,10 +1,12 @@
+
 import React from "react";
-import getDataMap, {getCursorPerFilter } from "@/utils/mongo/query";
+import getDataMap, { getCursorPerFilter } from "@/utils/mongo/query";
 import { returnDocumentsSlice } from "@/utils/mongo/format";
-import filterUpdateLink, {getCurrentIndexRange, parseFilterURL, removeFilter} from "@/utils/url/filter";
-import {documentLimitDefault, TELEVIEW_VERBOSE} from "@/utils/config";
+import filterUpdateLink, { getCurrentIndexRange, parseFilterURL } from "@/utils/url/filter";
+import { documentLimitDefault, TELEVIEW_VERBOSE } from "@/utils/config";
 import NavTable from "@/components/NavDocs/table";
 import SelectTimeRange from "@/utils/time/select";
+import MenuBar from "@/components/menu/menu_bar";
 
 
 // set this to 0, query the database, getting the newest data, and remake the page
@@ -67,7 +69,11 @@ export default async function Page({ params }: { params: { query: Array<string> 
             </div>
             <div className="flex flex-row h-60 overflow-auto">
                 <div className="flex flex-col w-1/3">
-                    {removeFilter(modifierState, filterState)}
+                    <MenuBar
+                        modifierState={modifierState}
+                        filterState={filterState}
+                    />
+
                 </div>
 
                 <div className="flex flex-col w-1/3" key={indexKeyString + 'action_type' + "false"}>
@@ -76,16 +82,16 @@ export default async function Page({ params }: { params: { query: Array<string> 
                     })}
                 </div>
                 <div className="flex flex-col w-1/3" key={"TimeRangeFilterSelect"}>
-                    {<SelectTimeRange
+                    <SelectTimeRange
                         suggestedMin={timestampDatabaseMin}
                         suggestedMax={timestampDataBaseMax}
                         filterState={filterState}
                         modifierState={modifierState}
-                    />}
+                    />
                 </div>
             </div>
             <div className="h-3/5">
-                {<NavTable
+                <NavTable
                     docArray={docArray}
                     modifierState={modifierState}
                     filterState={filterState}
@@ -93,7 +99,7 @@ export default async function Page({ params }: { params: { query: Array<string> 
                     viewIndexMin={startIndex}
                     viewIndexMax={endIndex}
                     indexMax={maxIndex}
-                />}
+                />
             </div>
         </main>
     )

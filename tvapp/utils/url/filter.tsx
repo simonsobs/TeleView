@@ -307,7 +307,8 @@ function addSubtractFilterString(targetValue: string, currentFilterValues: undef
         if (currentFilterValues === undefined) {
             return undefined
         } else {
-            if (currentFilterValues.has(targetValue)) {
+            const valuesSet = new Set(currentFilterValues)
+            if (valuesSet.has(targetValue)) {
                 const newFilterValues = [...Array.from(currentFilterValues).filter((value: string) => value !== targetValue)]
                 if (newFilterValues.length === 0) {
                     return undefined
@@ -315,7 +316,7 @@ function addSubtractFilterString(targetValue: string, currentFilterValues: undef
                     return new Set(newFilterValues)
                 }
             } else {
-                return currentFilterValues
+                return valuesSet
             }
         }
     }
@@ -365,83 +366,6 @@ function addSubtractFilter(filterState: GetCursorPerFilterInput, filterKey: stri
             break;
     }
     return newFilterState
-}
-
-
-export function removeFilter(modifierState: ModifierState, filterState: GetCursorPerFilterInput)
-    : Array<React.ReactElement> {
-    let removeLinks: Array<React.ReactElement> = []
-    for (let filterName of Object.keys(filterState)) {
-        let linksThisType: Array<React.ReactNode> | undefined = undefined
-        switch (filterName) {
-            case "action_type":
-                const filterValuesActionType = filterState.action_type
-                if (filterValuesActionType !== undefined) {
-                    linksThisType = Array.from(filterValuesActionType).map((filterValue) => {
-                        return filterUpdateLink(modifierState, filterState, 'action_type', filterValue, false)
-                    })
-                }
-                break
-            case "timestamp":
-                const filterValuesTimestamp = filterState.timestamp
-                if (filterValuesTimestamp !== undefined) {
-                    linksThisType = Array.from(filterValuesTimestamp).map((filterValue) => {
-                        return filterUpdateLink(modifierState, filterState, 'timestamp', filterValue, false)
-                    })
-                }
-                break
-            case "coarse_timestamp":
-                const filterValuesCoarseTimestamp = filterState.timestamp_coarse
-                if (filterValuesCoarseTimestamp !== undefined) {
-                    linksThisType = Array.from(filterValuesCoarseTimestamp).map((filterValue) => {
-                        return filterUpdateLink(modifierState, filterState, 'timestamp_coarse', filterValue, false)
-                    })
-                }
-                break
-            case "ufm_number":
-                const filterValuesUfmNumber = filterState.ufm_number
-                if (filterValuesUfmNumber !== undefined) {
-                    linksThisType = Array.from(filterValuesUfmNumber).map((filterValue) => {
-                        return filterUpdateLink(modifierState, filterState, 'ufm_number', filterValue, false)
-                    })
-                }
-                break
-            case "ufm_letter":
-                const filterValuesUfmLetter = filterState.ufm_letter
-                if (filterValuesUfmLetter !== undefined) {
-                    linksThisType = Array.from(filterValuesUfmLetter).map((filterValue) => {
-                        return filterUpdateLink(modifierState, filterState, 'ufm_letter', filterValue, false)
-                    })
-                }
-                break
-            case "timestamp_range":
-                const filterValuesTimestampRange = filterState.timestamp_range
-                if (filterValuesTimestampRange !== undefined) {
-                    linksThisType = Array.from(filterValuesTimestampRange).map((filterValue) => {
-                        return filterUpdateLink(modifierState, filterState, 'timestamp_range', filterValue, false)
-                    })
-                }
-                break
-            default:
-                break
-        }
-        if (linksThisType !== undefined) {
-            removeLinks.push(
-                <div className="flex flex-col" key={filterName + "false"}>
-                    <h2 className={`text-3xl text-tvblue font-semibold`}>{filterName}:</h2>
-                    { linksThisType }
-                </div>
-            )
-        }
-    }
-    if (removeLinks.length === 0) {
-        removeLinks.push(
-            <div className="flex flex-col" key={"empty"}>
-                <h2 className={`text-3xl text-tvblue font-semibold`}>No filters set</h2>
-            </div>
-        )
-    }
-    return removeLinks
 }
 
 
