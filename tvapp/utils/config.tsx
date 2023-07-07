@@ -4,7 +4,7 @@ const TELEVIEW_VERBOSE_RAW = process.env['TELEVIEW_VERBOSE']
 
 export let TELEVIEW_VERBOSE: boolean
 if (TELEVIEW_VERBOSE_RAW === undefined) {
-    TELEVIEW_VERBOSE = false
+    TELEVIEW_VERBOSE = true
 } else {
     TELEVIEW_VERBOSE = !!process.env['TELEVIEW_VERBOSE']
 }

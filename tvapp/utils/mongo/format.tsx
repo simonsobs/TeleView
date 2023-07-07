@@ -28,6 +28,7 @@ export async function returnDocumentsSlice(start: number = 0, end: number = 100,
         }
         const doc = await dataCursor.next()
         if (i >= start) {
+            doc['_id'] = doc['_id'].toString()
             docArray.push(doc)
         }
     }

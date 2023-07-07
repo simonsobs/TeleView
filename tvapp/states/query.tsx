@@ -23,7 +23,7 @@ export const queryContextDefaultValue: AppContextInterface = {
 export const QueryContext = createContext<AppContextInterface>(queryContextDefaultValue);
 
 export default function QueryProvider({ children }: { children: ReactNode }) {
-    const [isRemoveFilterMenuOpen, setIsRemoveFilterMenuOpen] = useState<boolean>(true);
+    const [isRemoveFilterMenuOpen, setIsRemoveFilterMenuOpen] = useState<boolean>(false);
     const [isMatchMenuOpen, setIsMatchMenuOpen] = useState<boolean>(false);
     const [isTimeRangeMenuOpen, setIsTimeRangeMenuOpen] = useState<boolean>(false);
     return (

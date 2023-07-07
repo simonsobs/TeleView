@@ -1,6 +1,6 @@
-import {GetCursorPerFilterInput} from "@/utils/mongo/query";
+import { GetCursorPerFilterInput } from "@/utils/mongo/query";
 import React from "react";
-import filterUpdateLink, {ModifierState} from "@/utils/url/filter";
+import filterUpdateLink, { ModifierState } from "@/utils/url/filter";
 
 export function noFiltersSet(): React.ReactElement {
     return (
@@ -73,13 +73,12 @@ function filterIteratorMap(filterState: GetCursorPerFilterInput): FilterIterator
 
 export function RemoveFilterMenu({modifierState, filterState} : {modifierState: ModifierState, filterState: GetCursorPerFilterInput})
     : React.ReactElement {
-    // const { isRemoveFilterMenuOpen, setIsRemoveFilterMenuOpen} = useContext(QueryContext)
     const filterIterator = filterIteratorMap(filterState)
     if (filterIterator.size === 0) {
         return noFiltersSet()
     }
     return (
-        <div>
+        <div className="m-4">
             {Array.from(filterIterator.entries()).map(([filterKey, filterValues]) => (
                 <div key={"remove filter type" + filterKey}>
                     <div>

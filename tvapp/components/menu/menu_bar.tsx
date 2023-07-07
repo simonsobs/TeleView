@@ -1,11 +1,12 @@
 'use client'
 
-import React, { useContext} from "react";
+import React, { useContext } from "react";
 
-import QueryProvider, {QueryContext} from "@/states/query";
-import {RemoveFilterMenu} from "@/components/menu/remove_filters";
-import {ModifierState} from "@/utils/url/filter";
-import {GetCursorPerFilterInput} from "@/utils/mongo/query";
+import QueryProvider, { QueryContext } from "@/states/query";
+import { RemoveFilterMenu } from "@/components/menu/remove_filters";
+import { ModifierState } from "@/utils/url/filter";
+import { GetCursorPerFilterInput } from "@/utils/mongo/query";
+import Drawer from "@/components/menu/drawer";
 
 
 
@@ -37,7 +38,7 @@ export function menuButton({isClicked, buttonHandler, buttonText}: MenuButtonInp
 }
 
 
-export function MenuBarNav({modifierState, filterState} : {modifierState: ModifierState, filterState: GetCursorPerFilterInput}): React.ReactElement {
+export default function MenuBar({modifierState, filterState} : {modifierState: ModifierState, filterState: GetCursorPerFilterInput}): React.ReactElement {
     const { isRemoveFilterMenuOpen, setIsRemoveFilterMenuOpen} = useContext(QueryContext)
     const onClick = (event: React.MouseEvent<HTMLButtonElement>) => {
         event.preventDefault()
@@ -45,25 +46,21 @@ export function MenuBarNav({modifierState, filterState} : {modifierState: Modifi
         setIsRemoveFilterMenuOpen(!isRemoveFilterMenuOpen)
     }
     return (
-        <QueryProvider>
-            <div>
-                {menuButton({isClicked: isRemoveFilterMenuOpen, buttonHandler: onClick, buttonText: "Remove Filters"})}
-                {isRemoveFilterMenuOpen ? <RemoveFilterMenu
-                    modifierState={modifierState}
-                    filterState={filterState}
-                /> : <></>}
+        <div>
+            <div className="grid grid-cols-4 gap-4">
+                <div>
+                    Placeholder
+                </div>
+                <div>
+                    {menuButton({isClicked: isRemoveFilterMenuOpen, buttonHandler: onClick, buttonText: "Remove Filters"})}
+                </div>
             </div>
-        </QueryProvider>
+            <Drawer
+                isOpen={isRemoveFilterMenuOpen}
+                setIsOpen={setIsRemoveFilterMenuOpen}
+                title={"Remove Filters Menu"}>
+                {RemoveFilterMenu({modifierState, filterState})}
+            </Drawer>
+        </div>
     )
-
-}
-
-
-export default function MenuBar({modifierState, filterState} : {modifierState: ModifierState, filterState: GetCursorPerFilterInput}): React.ReactElement {
-    return (
-        <QueryProvider>
-            <MenuBarNav modifierState={modifierState} filterState={filterState}/>
-        </QueryProvider>
-    )
-
 }

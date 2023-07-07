@@ -418,23 +418,22 @@ export default function filterUpdateLink(
     const uri = filterUpdateURI(modifierState, filterState, filterKey, filterValue, toAdd)
     return (
         <Link href={uri}
-              className="group rounded-lg border border-transparent  transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
+              className="text-md text-tvblue font-semibold"
               rel="noopener noreferrer"
               key={"Filter_database_" + uri}
               prefetch={false}
         >
-            <h2 className={`text-xl text-tvblue font-semibold`}>
-                {toAdd
+            {
+                toAdd
                     ?
-                    <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-                        +
-                    </span>
+                    <div className="hover:text-tvgreen">
+                        {"+ " + filterValue}
+                    </div>
                     :
-                    <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-                        -
-                    </span>}
-                {' ' + filterValue }
-            </h2>
+                    <div className="hover:text-tvbrown">
+                        {"- " + filterValue}
+                    </div>
+            }
         </Link>
     )
 }
