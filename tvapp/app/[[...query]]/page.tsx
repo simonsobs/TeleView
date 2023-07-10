@@ -1,11 +1,9 @@
-
 import React from "react";
-import getDataMap, { getCursorPerFilter } from "@/utils/mongo/query";
-import { returnDocumentsSlice } from "@/utils/mongo/format";
-import { getCurrentIndexRange, parseFilterURL } from "@/utils/url/filter";
-import { TELEVIEW_VERBOSE } from "@/utils/config";
 
+import { TELEVIEW_VERBOSE } from "@/utils/config";
 import QueryPage from "@/components/query";
+import { getCurrentIndexRange, parseFilterURL } from "@/utils/url/filter";
+import getDataMap, { getCursorPerFilter, returnDocumentsSlice } from "@/utils/mongo/query";
 
 
 // set this to 0, query the database, getting the newest data, and remake the page

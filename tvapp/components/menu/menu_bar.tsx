@@ -2,12 +2,7 @@
 
 import React, { useContext } from "react";
 
-import QueryProvider, { QueryContext } from "@/states/query";
-import { RemoveFilterMenu } from "@/components/menu/remove_filters";
-import { ModifierState } from "@/utils/url/filter";
-import { GetCursorPerFilterInput } from "@/utils/mongo/query";
-import Drawer from "@/components/menu/drawer";
-
+import { QueryContext } from "@/states/query";
 
 
 type MenuButtonInput = {
@@ -15,6 +10,7 @@ type MenuButtonInput = {
     buttonHandler: React.MouseEventHandler<HTMLButtonElement>,
     buttonText: string
 }
+
 
 export function menuButton({isClicked, buttonHandler, buttonText}: MenuButtonInput): React.ReactNode{
     if (isClicked) {
@@ -38,8 +34,11 @@ export function menuButton({isClicked, buttonHandler, buttonText}: MenuButtonInp
 }
 
 
-export default function MenuBar({modifierState, filterState} : {modifierState: ModifierState, filterState: GetCursorPerFilterInput}): React.ReactElement {
-    const { isRemoveFilterMenuOpen, setIsRemoveFilterMenuOpen} = useContext(QueryContext)
+export default function MenuBar(): React.ReactElement {
+    const {
+        isRemoveFilterMenuOpen,
+        setIsRemoveFilterMenuOpen,
+    } = useContext(QueryContext)
     const onClick = (event: React.MouseEvent<HTMLButtonElement>) => {
         event.preventDefault()
         console.log("Clicked, isToggleMenuOpen: " + isRemoveFilterMenuOpen + " -> " + !isRemoveFilterMenuOpen + "")
@@ -55,12 +54,6 @@ export default function MenuBar({modifierState, filterState} : {modifierState: M
                     {menuButton({isClicked: isRemoveFilterMenuOpen, buttonHandler: onClick, buttonText: "Remove Filters"})}
                 </div>
             </div>
-            <Drawer
-                isOpen={isRemoveFilterMenuOpen}
-                setIsOpen={setIsRemoveFilterMenuOpen}
-                title={"Remove Filters Menu"}>
-                {RemoveFilterMenu({modifierState, filterState})}
-            </Drawer>
         </div>
     )
 }

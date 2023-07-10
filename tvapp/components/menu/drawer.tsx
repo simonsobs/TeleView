@@ -1,71 +1,46 @@
-import React, {Dispatch, SetStateAction, useEffect, useRef, createRef} from "react";
+import React from "react";
 
 
-function assertIsNode(e: EventTarget | null): asserts e is Node {
-    if (!e || !("nodeType" in e)) {
-        throw new Error(`Node expected`);
-    }
+type ClickBarrierProps = {
+    onClick: () => void;
+}
+
+
+export function ClickBarrier({ onClick }: ClickBarrierProps): React.ReactElement {
+    return (
+        <div
+            className="absolute top-0 left-0 h-screen w-screen bg-grey-100 backdrop-blur-sm z-30"
+            onClick={onClick}
+        >
+        </div>
+    );
 }
 
 
 type DrawerProps = {
-    isOpen: boolean;
-    setIsOpen: Dispatch<SetStateAction<boolean>>;
+    closeCallback: () => void;
     title: string;
     children: React.ReactNode;
 }
 
 
-export default function Drawer({ isOpen, setIsOpen, title, children }: DrawerProps) {
-    const drawerRef = createRef<HTMLDivElement>();
-    useEffect(() => {
-        if (isOpen && drawerRef.current) {
-            drawerRef.current.focus();
-        }
-    }, [isOpen, drawerRef]);
-    useEffect(() => {
-        const handleClickOutside = (event: Event): void => {
-            const target = event.target
-            assertIsNode(target);
-            if (drawerRef.current && target!== null && !drawerRef.current.contains(target)) {
-                setIsOpen(false);
-            }
-        };
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => {
-            document.removeEventListener('mousedown', handleClickOutside);
-        };
-    }, [drawerRef, setIsOpen]);
-    useEffect(() => {
-        if (isOpen) {
-            document.body.style.overflow = 'hidden';
-        } else {
-            document.body.style.overflow = '';
-        }
-    }, [isOpen]);
-    if (isOpen) {
-        return (
-            <div>
-                <div className="flex flex-column h-screen w-screen bg-grey-100 backdrop-blur-sm z-30">
-                    <div
-                        ref={drawerRef}
-                        tabIndex={-1}
-                        className="justify-content-center bg-tvblue h-full w-auto z-40">
-                        <div className="flex flex-row justify-end bg-tvyellow text-tvpurple text-xl ">
-                            <div className="grow text-center mx-3">
-                                {title}
-                            </div>
-                            <button className={"bg-tvbrown text-tvgrey hover:text-tvorange hover:border-tvorange h-8 border-2 end-0"} onClick={() => setIsOpen(false)}>
-                                X
-                            </button>
-                        </div>
-                        <div className="flex flex-row bg-tvpurple">
-                            {children}
-                        </div>
-                    </div>
+export default function Drawer({ closeCallback, title, children }: DrawerProps) {
+    return (
+        <div className="flex-col h-full bg-tvblue">
+            <div className="flex flex-row justify-end bg-tvyellow text-tvpurple text-xl">
+                <div className="grow text-center mx-3">
+                    {title}
                 </div>
+                <button
+                    className={"bg-tvbrown text-tvgrey hover:text-tvorange hover:border-tvorange h-8 border-2 end-0"}
+                    onClick={ closeCallback }
+                >
+                    X
+                </button>
             </div>
-        );
-    }
-    return <></>
+            <div className="flex flex-row bg-tvpurple">
+                { children }
+            </div>
+        </div>
+    );
 }
