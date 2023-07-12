@@ -1,27 +1,17 @@
-import React from "react";
 import Link from "next/link";
-import mongo from "mongodb";
+import React, {useContext} from "react";
 
-import {ModifierState, genFilterURL} from "@/utils/url/filter";
-import {GetCursorPerFilterInput} from "@/utils/mongo/query";
+import {QueryContext} from "@/states/query";
+import {FilterState} from "@/utils/mongo/request_data";
+import {ModifierState, genFilterURL, getCurrentIndexRange} from "@/utils/url/filter";
 
 
 const documentNavCellCSS = "px-4 border border-tvorange text-center"
 
-export type NavTableInput = {
-    docArray: Array<mongo.Document>,
-    modifierState: ModifierState,
-    filterState: GetCursorPerFilterInput,
-    deltaIndex: number,
-    viewIndexMin: number,
-    viewIndexMax: number,
-    indexMax: number
-}
-
 
 function indexElement(
     modifierState: ModifierState,
-    filterState: GetCursorPerFilterInput,
+    filterState: FilterState,
     indexMin: number,
     indexMax: number,
     isCurrent: boolean,
@@ -55,21 +45,22 @@ function indexElement(
     }
 }
 
+
 function documentIndexNav(
     modifierState: ModifierState,
-    filterState: GetCursorPerFilterInput,
-    deltaIndex:number,
+    filterState: FilterState,
+    documentItemLimit:number,
     viewIndexMin:number,
     viewIndexMax:number,
-    indexMax: number
+    maxIndex: number
 ): React.ReactElement {
-    const prevIndexMin = Math.max(0, viewIndexMin - deltaIndex)
+    const prevIndexMin = Math.max(0, viewIndexMin - documentItemLimit)
     const prevIndexMax = Math.max(viewIndexMin, 0)
-    const firstIndexMax = Math.max(Math.min(deltaIndex, prevIndexMin), 0)
+    const firstIndexMax = Math.max(Math.min(documentItemLimit, prevIndexMin), 0)
 
-    const nextIndexMin = Math.min(indexMax, viewIndexMax)
-    const nextIndexMax = Math.min(indexMax, nextIndexMin + deltaIndex)
-    const lastIndexMin = Math.min(Math.max(indexMax - deltaIndex, nextIndexMax), indexMax)
+    const nextIndexMin = Math.min(maxIndex, viewIndexMax)
+    const nextIndexMax = Math.min(maxIndex, nextIndexMin + documentItemLimit)
+    const lastIndexMin = Math.min(Math.max(maxIndex - documentItemLimit, nextIndexMax), maxIndex)
 
     return (
         <div className="grid grid-cols-5 text-tvyellow bg-tvpurple">
@@ -82,21 +73,33 @@ function documentIndexNav(
             {indexElement(modifierState, filterState, prevIndexMin, prevIndexMax, false, "prev")}
             {indexElement(modifierState, filterState, viewIndexMin, viewIndexMax, true, "current")}
             {indexElement(modifierState, filterState, nextIndexMin, nextIndexMax, false, "next")}
-            {indexElement(modifierState, filterState, lastIndexMin, indexMax, false, "last")}
+            {indexElement(modifierState, filterState, lastIndexMin, maxIndex, false, "last")}
         </div>
     )
 }
 
 
-export default function NavTable({docArray, modifierState, filterState, deltaIndex, viewIndexMin, viewIndexMax, indexMax}: NavTableInput): React.ReactElement {
+export default function NavTable(): React.ReactElement {
+
+    const {
+        modifierState,
+        filterState,
+        docArray,
+        documentItemLimit,
+        maxIndex,
+    } = useContext(QueryContext)
+
+    let [viewIndexMin, viewIndexMax] = getCurrentIndexRange(modifierState, documentItemLimit)
+
     const tableNavBar = documentIndexNav(
         modifierState,
         filterState,
-        deltaIndex,
+        documentItemLimit,
         viewIndexMin,
         viewIndexMax,
-        indexMax
+        maxIndex
     )
+
     return (
         <div className="flex flex-col h-full w-full border-4 text-tvgry bg-tvgreen">
             <div className=" h-min text-tvgry bg-tvbrown">
@@ -125,7 +128,7 @@ export default function NavTable({docArray, modifierState, filterState, deltaInd
                             const linkString: string = 'data_view/' + ufmLabel + '/' + timestamp.toString() + '/' + actionType
                             return (
                                 <Link
-                                    className="table-row hover:bg-tvpurple hover:text-tvblue hover:text-xl"
+                                    className="table-row hover:bg-tvpurple hover:text-tvblue"
                                     key={timestamp.toString() + actionType + ufmLabel + timestampCoarse.toString()}
                                     href={linkString}
                                     prefetch={false}

@@ -1,12 +1,12 @@
-'use client'
 
 import Link from "next/link";
-import React, { useState } from "react";
+import React from "react";
 
-import {nowTimestamp, timestampToIsoString, isoStringToTimestamp} from "@/utils/time/time";
-import {filterUpdateURI, ModifierState} from "@/utils/url/filter";
-import {GetCursorPerFilterInput} from "@/utils/mongo/query";
-import {minIsoDate, maxIsoDate, TELEVIEW_VERBOSE} from "@/utils/config";
+
+import { minIsoDate, maxIsoDate } from "@/utils/config";
+import { FilterState } from "@/utils/mongo/request_data";
+import { filterUpdateURI, ModifierState } from "@/utils/url/filter";
+import { timestampToIsoString, isoStringToTimestamp } from "@/utils/time/time";
 
 
 type SelectTimeInput = {
@@ -29,29 +29,29 @@ function TimeSelect({headerString, timeValue, defaultValue, setTimeValue}: Selec
 
     }
     return (
-        <div className="flex flex-row">
-            <div className="flex flex-col">
-                <h1>{headerString}</h1>
-                <input
-                    className={"text-tvorange bg-tvpurple border border-tvyellow"}
-                    type="number"
-                    value={timeValue}
-                    name={headerString +" input timestamp for filter selection"}
-                    onChange={(event) => setTimeValue(parseInt(event.target.value))}
-                    key={headerString +" input timestamp for filter selection"}
+        <div className="flex flex-col">
+            <div className="text-xl">
+                {headerString}
+            </div>
+            <input
+                className={"text-tvorange bg-tvpurple border border-tvyellow"}
+                type="number"
+                value={timeValue}
+                name={headerString + " input timestamp for filter selection"}
+                onChange={(event) => setTimeValue(parseInt(event.target.value))}
+                key={headerString + " input timestamp for filter selection"}
 
+            />
+            <div className="flex flex-row">
+                <input className={"text-tvorange bg-tvpurple border border-tvyellow"}
+                        type="datetime-local"
+                        value={isoTimeString}
+                        name={headerString +" input timestamp for filter selection"}
+                        onChange={onChange}
+                        key={headerString +" input datetime for filter selection"}
+                        min={minIsoDate}
+                        max={maxIsoDate}
                 />
-                <div className="flex flex-row">
-                    <input className={"text-tvorange bg-tvpurple border border-tvyellow"}
-                            type="datetime-local"
-                            value={isoTimeString}
-                            name={headerString +" input timestamp for filter selection"}
-                            onChange={onChange}
-                            key={headerString +" input datetime for filter selection"}
-                            min={minIsoDate}
-                            max={maxIsoDate}
-                    />
-                </div>
             </div>
         </div>
     )
@@ -59,41 +59,55 @@ function TimeSelect({headerString, timeValue, defaultValue, setTimeValue}: Selec
 
 
 export type SelectTimeRangeInput = {
-    suggestedMin: number | undefined,
-    suggestedMax: number | undefined,
     modifierState: ModifierState,
-    filterState: GetCursorPerFilterInput
+    filterState: FilterState,
+    timestampDatabaseMin: number,
+    timestampDatabaseMax: number,
+    selectedTimestampMin: number,
+    setSelectedTimestampMin: React.Dispatch<React.SetStateAction<number>>,
+    selectedTimestampMax: number,
+    setSelectedTimestampMax: React.Dispatch<React.SetStateAction<number>>
 }
 
 
-export default function SelectTimeRange({suggestedMin, suggestedMax, modifierState, filterState } : SelectTimeRangeInput)
-    : React.ReactElement {
-    const [min, setMin] = useState<number>(suggestedMin ?? 0)
-    const [max, setMax] = useState<number>(suggestedMax ?? nowTimestamp())
+export default function SelectTimeRange({
+        modifierState,
+        filterState,
+        timestampDatabaseMin,
+        timestampDatabaseMax,
+        selectedTimestampMin,
+        setSelectedTimestampMin,
+        selectedTimestampMax,
+        setSelectedTimestampMax
+    }: SelectTimeRangeInput): React.ReactElement {
+
 
     return (
-        <div className="flex flex-row h-full w-full">
-            <div className="text-tvgrey">
-                <div className="flex flex-col w-1/2">
-                    <TimeSelect
-                        headerString={"Min"}
-                        timeValue={min}
-                        defaultValue={suggestedMin ?? 0}
-                        setTimeValue={setMin}
-                    />
-                    <TimeSelect
-                        headerString={"Max"}
-                        timeValue={max}
-                        defaultValue={suggestedMax ?? nowTimestamp()}
-                        setTimeValue={setMax}
-                    />
-                    <Link href={filterUpdateURI(modifierState, filterState, 'timestamp_range', [min, max], true)}>
-                        <button className="text-tvblue bg-tvpurple border border-tvyellow">
-                            Submit
-                        </button>
-                    </Link>
-                </div>
+        <div className="flex flex-col">
+            <div className="flex flex-row">
+                <TimeSelect
+                    headerString={"Min"}
+                    timeValue={selectedTimestampMin}
+                    defaultValue={timestampDatabaseMin}
+                    setTimeValue={setSelectedTimestampMin}
+                />
+                <TimeSelect
+                    headerString={"Max"}
+                    timeValue={selectedTimestampMax}
+                    defaultValue={timestampDatabaseMax}
+                    setTimeValue={setSelectedTimestampMax}
+                />
             </div>
+
+            <Link
+                href={filterUpdateURI(modifierState, filterState, 'timestamp_range', [selectedTimestampMin, selectedTimestampMax], true)}
+                className="m-12"
+            >
+                <button className="text-tvputple bg-tvbrown border-2 border-tvblue p-4 hover:bg-gogreen hover:text-black hover:border-tvbrown">
+                    Submit
+                </button>
+            </Link>
         </div>
+
     )
 }

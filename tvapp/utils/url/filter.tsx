@@ -1,13 +1,13 @@
 import React from "react";
 import Link from 'next/link';
 
-import { simplifyRanges } from "@/utils/time/time";
-import {GetCursorPerFilterInput} from "@/utils/mongo/query";
 import { documentLimitDefault } from "@/utils/config";
+import { FilterState } from "@/utils/mongo/request_data";
+import { simplifyRanges, timestampToIsoString } from "@/utils/time/time";
+
 
 const rangeModifierDataTypes = new Set(['document_range'])
 export type ModifierState = { [key: string] : Set<number | string> | [number, number] }
-
 
 
 function parseNumber(numberString: string): number {
@@ -127,14 +127,14 @@ function parseModifierString(modifierString: string): ModifierState {
 
 
 export function parseFilterURL(filterURL: Array<string> | undefined, verbose: boolean = false)
-    : [ModifierState, GetCursorPerFilterInput] {
+    : [ModifierState, FilterState] {
     let queryString = ""
     if (filterURL !== undefined && filterURL.length > 0) {
         queryString = queryString + filterURL[0]
     }
     const paramsStrings = queryString.split("!")
     const modifierState = parseModifierString(paramsStrings[0])
-    let filterState : GetCursorPerFilterInput = {
+    let filterState : FilterState = {
         action_type: undefined,
         timestamp: undefined,
         timestamp_coarse: undefined,
@@ -228,7 +228,7 @@ function encodeToURFilterKeyValue(key: string, valueSet: undefined | Set<string 
     return stateURL
 }
 
-function encodeToURLFilter(filterState: GetCursorPerFilterInput, primaryOperator: string = "!", secondaryOperator: string = "$"): string {
+function encodeToURLFilter(filterState: FilterState, primaryOperator: string = "!", secondaryOperator: string = "$"): string {
     let stateURL = ""
     const alphabeticallySortedKeys = Object.keys(filterState).sort()
     for (let key of alphabeticallySortedKeys) {
@@ -263,7 +263,7 @@ function encodeToURLFilter(filterState: GetCursorPerFilterInput, primaryOperator
 }
 
 
-export function genFilterURL(modifierState: ModifierState, filterState: GetCursorPerFilterInput): string {
+export function genFilterURL(modifierState: ModifierState, filterState: FilterState): string {
     let filterURL = "/" + encodeToURLModifier(modifierState, "*", "$")
     filterURL += encodeToURLFilter(filterState, "!", "$")
     return filterURL
@@ -307,7 +307,8 @@ function addSubtractFilterString(targetValue: string, currentFilterValues: undef
         if (currentFilterValues === undefined) {
             return undefined
         } else {
-            if (currentFilterValues.has(targetValue)) {
+            const valuesSet = new Set(currentFilterValues)
+            if (valuesSet.has(targetValue)) {
                 const newFilterValues = [...Array.from(currentFilterValues).filter((value: string) => value !== targetValue)]
                 if (newFilterValues.length === 0) {
                     return undefined
@@ -315,7 +316,7 @@ function addSubtractFilterString(targetValue: string, currentFilterValues: undef
                     return new Set(newFilterValues)
                 }
             } else {
-                return currentFilterValues
+                return valuesSet
             }
         }
     }
@@ -339,9 +340,9 @@ function addSubtractFilterRange(targetRange: [number, number], currentFilterValu
 }
 
 
-function addSubtractFilter(filterState: GetCursorPerFilterInput, filterKey: string, filterValue: string | number | [number, number], add: boolean = false)
-    : GetCursorPerFilterInput {
-    const newFilterState: GetCursorPerFilterInput = { ...filterState }
+function addSubtractFilter(filterState: FilterState, filterKey: string, filterValue: string | number | [number, number], add: boolean = false)
+    : FilterState {
+    const newFilterState: FilterState = { ...filterState }
     switch (filterKey) {
         case "action_type":
             if (typeof filterValue === "string") newFilterState.action_type = addSubtractFilterString(filterValue, filterState.action_type, add)
@@ -368,86 +369,15 @@ function addSubtractFilter(filterState: GetCursorPerFilterInput, filterKey: stri
 }
 
 
-export function removeFilter(modifierState: ModifierState, filterState: GetCursorPerFilterInput)
-    : Array<React.ReactElement> {
-    let removeLinks: Array<React.ReactElement> = []
-    for (let filterName of Object.keys(filterState)) {
-        let linksThisType: Array<React.ReactNode> | undefined = undefined
-        switch (filterName) {
-            case "action_type":
-                const filterValuesActionType = filterState.action_type
-                if (filterValuesActionType !== undefined) {
-                    linksThisType = Array.from(filterValuesActionType).map((filterValue) => {
-                        return filterUpdateLink(modifierState, filterState, 'action_type', filterValue, false)
-                    })
-                }
-                break
-            case "timestamp":
-                const filterValuesTimestamp = filterState.timestamp
-                if (filterValuesTimestamp !== undefined) {
-                    linksThisType = Array.from(filterValuesTimestamp).map((filterValue) => {
-                        return filterUpdateLink(modifierState, filterState, 'timestamp', filterValue, false)
-                    })
-                }
-                break
-            case "coarse_timestamp":
-                const filterValuesCoarseTimestamp = filterState.timestamp_coarse
-                if (filterValuesCoarseTimestamp !== undefined) {
-                    linksThisType = Array.from(filterValuesCoarseTimestamp).map((filterValue) => {
-                        return filterUpdateLink(modifierState, filterState, 'timestamp_coarse', filterValue, false)
-                    })
-                }
-                break
-            case "ufm_number":
-                const filterValuesUfmNumber = filterState.ufm_number
-                if (filterValuesUfmNumber !== undefined) {
-                    linksThisType = Array.from(filterValuesUfmNumber).map((filterValue) => {
-                        return filterUpdateLink(modifierState, filterState, 'ufm_number', filterValue, false)
-                    })
-                }
-                break
-            case "ufm_letter":
-                const filterValuesUfmLetter = filterState.ufm_letter
-                if (filterValuesUfmLetter !== undefined) {
-                    linksThisType = Array.from(filterValuesUfmLetter).map((filterValue) => {
-                        return filterUpdateLink(modifierState, filterState, 'ufm_letter', filterValue, false)
-                    })
-                }
-                break
-            case "timestamp_range":
-                const filterValuesTimestampRange = filterState.timestamp_range
-                if (filterValuesTimestampRange !== undefined) {
-                    linksThisType = Array.from(filterValuesTimestampRange).map((filterValue) => {
-                        return filterUpdateLink(modifierState, filterState, 'timestamp_range', filterValue, false)
-                    })
-                }
-                break
-            default:
-                break
-        }
-        if (linksThisType !== undefined) {
-            removeLinks.push(
-                <div className="flex flex-col" key={filterName + "false"}>
-                    <h2 className={`text-3xl text-tvblue font-semibold`}>{filterName}:</h2>
-                    { linksThisType }
-                </div>
-            )
-        }
-    }
-    if (removeLinks.length === 0) {
-        removeLinks.push(
-            <div className="flex flex-col" key={"empty"}>
-                <h2 className={`text-3xl text-tvblue font-semibold`}>No filters set</h2>
-            </div>
-        )
-    }
-    return removeLinks
-}
-
-
-export function getCurrentIndexRange(modifierState: ModifierState): [number, number] {
+export function getCurrentIndexRange(modifierState: ModifierState, documentLimit: number | undefined): [number, number] {
     let startIndex = 0
-    let endIndex = documentLimitDefault
+    let endIndex: number
+    if (typeof documentLimit === 'undefined') {
+        endIndex = documentLimitDefault
+    } else {
+        endIndex = documentLimit
+    }
+
     const rangeValuesSet = modifierState.document_range
     if (rangeValuesSet !== undefined) {
         const rangeValues = Array.from(rangeValuesSet)
@@ -471,7 +401,7 @@ export function getCurrentIndexRange(modifierState: ModifierState): [number, num
 
 
 export function filterUpdateURI(modifierState: ModifierState,
-                                filterState: GetCursorPerFilterInput,
+                                filterState: FilterState,
                                 filterKey: string,
                                 filterValue: string | number | [number, number],
                                 add: boolean = false): string {
@@ -487,30 +417,101 @@ export function filterUpdateURI(modifierState: ModifierState,
 
 export default function filterUpdateLink(
     modifierState: ModifierState,
-    filterState: GetCursorPerFilterInput,
+    filterState: FilterState,
     filterKey: string,
     filterValue: string | number | [number, number],
-    toAdd: boolean = true): React.ReactNode {
+    toAdd: boolean = true): React.ReactElement {
+
+    const bulletString = toAdd ? "+" : "-"
+    let filterValueString : string | React.ReactElement = ''
+    if (typeof filterValue === "string") {
+        filterValueString = bulletString + " " + filterValue
+    } else if (typeof filterValue === "number") {
+        filterValueString = bulletString + " " + filterValue.toString()
+    } else if (Array.isArray(filterValue)) {
+        const startTime = filterValue[0]
+        const endTime = filterValue[1]
+        filterValueString = (
+            <div className="flex flex-col">
+                <div>
+                    {bulletString + " " + "(" + startTime.toString() + ", " + endTime.toString() + ")"}
+                </div>
+
+                <div>
+                    {"(" + timestampToIsoString(startTime) + ", " + timestampToIsoString(endTime) + ")"}
+                </div>
+            </div>
+
+        )
+    }
+
     const uri = filterUpdateURI(modifierState, filterState, filterKey, filterValue, toAdd)
     return (
         <Link href={uri}
-              className="group rounded-lg border border-transparent  transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-              rel="noopener noreferrer"
-              key={"Filter_database_" + uri}
-              prefetch={false}
+            rel="noopener noreferrer"
+            key={"Filter_database_" + uri}
+            prefetch={false}
         >
-            <h2 className={`text-xl text-tvblue font-semibold`}>
-                {toAdd
-                    ?
-                    <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-                        +
-                    </span>
-                    :
-                    <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-                        -
-                    </span>}
-                {' ' + filterValue }
-            </h2>
+            {filterValueString}
         </Link>
     )
+}
+
+type nonEmptyFilterTypes = Array<string> | Array<number> | Array<[number, number]>
+type FilterIteratorMapInput = Map<string, nonEmptyFilterTypes>;
+
+
+export function filterIteratorMap(filterState: FilterState): FilterIteratorMapInput {
+    const sortedFilterKeys = Object.keys(filterState).sort()
+    const extractionMap: FilterIteratorMapInput = new Map();
+    for ( const [filterName, filterValues] of Object.entries(filterState)) {
+        let filterValues: nonEmptyFilterTypes = []
+        let valuesFound = true
+        switch (filterName) {
+            case "action_type":
+                if (filterState.action_type !== undefined) {
+                    filterValues = Array.from(filterState.action_type)
+                }
+                break
+            case "timestamp":
+                if (filterState.timestamp !== undefined) {
+                    filterValues = Array.from(filterState.timestamp)
+                }
+                break
+            case "timestamp_coarse":
+                if (filterState.timestamp_coarse !== undefined) {
+                    filterValues = Array.from(filterState.timestamp_coarse)
+                }
+                break
+            case "ufm_number":
+                if (filterState.ufm_number !== undefined) {
+                    filterValues = Array.from(filterState.ufm_number)
+                }
+                break
+            case "ufm_letter":
+                if (filterState.ufm_letter !== undefined) {
+                    filterValues = Array.from(filterState.ufm_letter)
+                }
+                break
+            case "timestamp_range":
+                if (filterState.timestamp_range !== undefined) {
+                    filterValues = filterState.timestamp_range
+                }
+                break
+            default:
+                valuesFound = false
+                break
+        }
+        if (valuesFound) {
+            extractionMap.set(filterName, filterValues)
+        }
+    }
+    const orderedMap: FilterIteratorMapInput = new Map()
+    for (const filterName of sortedFilterKeys) {
+        const filterValues = extractionMap.get(filterName)
+        if (filterValues !== undefined) {
+            orderedMap.set(filterName, filterValues)
+        }
+    }
+    return orderedMap
 }

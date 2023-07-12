@@ -28,8 +28,8 @@ module.exports = {
         'tvblue': '#6BBAEC',
         'tvbrown' : '#330F0A',
         'tvyellow': '#daa520',
-
-
+        'stopred': '#CC0202',
+        'gogreen': '#549C30',
       },
     },
   },
