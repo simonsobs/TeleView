@@ -126,7 +126,7 @@ function getRangeFilter(targetName: string, ranges: Array<[number, number]>): Mo
 }
 
 
-export type GetCursorPerFilterInput = {
+export type FilterState = {
     action_type: undefined | Set<string>,
     timestamp: undefined | Set<number>,
     timestamp_coarse: undefined | Set<number>,
@@ -144,7 +144,7 @@ export async function getCursorPerFilter({
                                              ufm_letter,
                                              ufm_number,
                                              timestamp_range
-    }: GetCursorPerFilterInput )
+    }: FilterState )
     : Promise<mongoDB.FindCursor> {
     let andFilters: Array<MongoFindFilter> = []
     if (action_type) {andFilters.push(getMatchFilter('action_type', action_type))}

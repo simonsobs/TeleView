@@ -1,6 +1,6 @@
 import React from "react";
 import * as mongoDB from "mongodb";
-import {getCursorPerFilter, GetCursorPerFilterInput} from "@/utils/mongo/query";
+import {getCursorPerFilter, FilterState} from "@/utils/mongo/request_data";
 import dataFileLink from "@/components/MenuLinks/data_files";
 import {filesBaseURI, TELEVIEW_VERBOSE} from "@/utils/config";
 import {fetchImage} from "@/components/image/get_image";
@@ -16,7 +16,7 @@ export default async function Page({ params }: { params: { id: Array<string> } }
     let [ufm_letter, ufm_number_sting] = ufm_id.split('v', 2)
     const ufm_number = parseInt(ufm_number_sting)
     const timestamp = parseInt(timestamp_sting)
-    const filterState: GetCursorPerFilterInput = {
+    const filterState: FilterState = {
         action_type: new Set([action_type]),
         timestamp: new Set([timestamp]),
         ufm_letter: new Set([ufm_letter]),
