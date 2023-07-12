@@ -46,6 +46,7 @@ services:
       - mongodb
     environment:
       # these variables are environment variables that are made available in the production environment
+      TELEVIEW_PUBLIC_SITE_URL: "${TELEVIEW_PUBLIC_SITE_URL}"
       TELEVIEW_MONGODB_HOST: "${TELEVIEW_MONGODB_HOST}"
       TELEVIEW_MONGODB_PORT: "${TELEVIEW_MONGODB_PORT}"
       TELEVIEW_MONGODB_ROOT_USERNAME: "${TELEVIEW_MONGODB_ROOT_USERNAME}"
@@ -57,7 +58,7 @@ services:
   nginx:
     image: nginx:latest
     ports:
-      - "80:8080"
+      - "${TELEVIEW_LOCALHOST_PORT}:8080"
     volumes:
       - "./nginx/nginx-setup.conf:/etc/nginx/conf.d/default.conf:ro"
       - "${TELEVIEW_SMURF_DATA_DIR}:/volume_data/smurf:ro"

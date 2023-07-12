@@ -14,7 +14,7 @@ import os
 from pathlib import Path
 
 # triggers print statements that are useful for debugging
-VERBOSE = True
+VERBOSE = os.environ.get('TELEVIEW_VERBOSE', default=True)
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.

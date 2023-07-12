@@ -1,6 +1,8 @@
+import Link from "next/link";
 import React, {Dispatch, SetStateAction, useContext} from "react";
 
 import { QueryContext } from "@/states/query";
+import getAPIBaseURL from "@/utils/url/get_real_url";
 
 
 type MenuButtonInput = {
@@ -62,6 +64,13 @@ export default function MenuBar(): React.ReactElement {
                 </div>
                 <div>
                     {menuButton({isClicked: isTimeRangeMenuOpen, setIsClicked: setIsTimeRangeMenuOpen, buttonText: "Time Range Filters", isCloseButton: false})}
+                </div>
+                <div>
+                    <Link href={getAPIBaseURL()}>
+                        <button className="bg-tvyellow hover:bg-tvbrown text-black hover:text-white font-bold py-2 px-4 rounded">
+                            Temp Link to Database Refresher
+                        </button>
+                    </Link>
                 </div>
             </div>
         </div>

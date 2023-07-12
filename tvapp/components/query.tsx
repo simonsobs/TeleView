@@ -19,7 +19,7 @@ export function QueryClient(): ReactElement {
                     <MenuBar/>
                 </div>
                 <div className="grow h-14">
-                    <div className="h-full w-1/2">
+                    <div className="h-full w-full px-24">
                         <NavTable/>
                     </div>
                 </div>
