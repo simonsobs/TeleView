@@ -1,9 +1,12 @@
 import React from "react";
 
-import { TELEVIEW_VERBOSE } from "@/utils/config";
 import QueryPage from "@/components/query";
+import { documentLimitDefault } from "@/utils/config";
+import { nowTimestamp } from "@/utils/time/time";
+import { TELEVIEW_VERBOSE } from "@/utils/config";
 import { getCurrentIndexRange, parseFilterURL } from "@/utils/url/filter";
-import getDataMap, { getCursorPerFilter, returnDocumentsSlice } from "@/utils/mongo/query";
+import getDataMap, { getCursorPerFilter, returnDocumentsSlice } from "@/utils/mongo/request_data";
+
 
 
 // set this to 0, query the database, getting the newest data, and remake the page
@@ -28,25 +31,28 @@ export default async function Page({ params }: { params: { query: Array<string> 
     const coarseTimestamps = valuesMap.get("coarseTimestamps")
     const timestamps = valuesMap.get("timestamps")
     let timestampDatabaseMin: number | undefined = parseInt(timestamps[0])
-    if (Number.isNaN(timestampDatabaseMin)) {
-        timestampDatabaseMin = undefined
+    if (timestampDatabaseMin === undefined || Number.isNaN(timestampDatabaseMin)) {
+        timestampDatabaseMin = 0
     }
     let timestampDataBaseMax: number | undefined = parseInt(timestamps[timestamps.length - 1])
-    if (Number.isNaN(timestampDataBaseMax)) {
-        timestampDataBaseMax = undefined
+    if (timestampDataBaseMax === undefined || Number.isNaN(timestampDataBaseMax)) {
+        timestampDataBaseMax = nowTimestamp()
     }
     // get the cursor for the current filter state
     const dataCursor = await getCursorPerFilter(filterState)
     // get a slice of the available documents
-    let [startIndex, endIndex] = getCurrentIndexRange(modifierState)
+    let [startIndex, endIndex] = getCurrentIndexRange(modifierState, documentLimitDefault)
     const [docArray, maxIndex] = await returnDocumentsSlice(startIndex, endIndex, dataCursor)
-    return (<QueryPage
-        modifierState={modifierState}
-        filterState={filterState}
-        docArray={docArray}
-        availableActionTypes={availableActionTypes}
-        maxIndex={maxIndex}
-        timestampDatabaseMin={timestampDatabaseMin}
-        timestampDatabaseMax={timestampDataBaseMax}
-    />)
+    return (
+        <QueryPage
+            modifierState={modifierState}
+            filterState={filterState}
+            documentItemLimit={documentLimitDefault}
+            docArray={docArray}
+            availableActionTypes={availableActionTypes}
+            maxIndex={maxIndex}
+            timestampDatabaseMin={timestampDatabaseMin}
+            timestampDatabaseMax={timestampDataBaseMax}
+        />
+    )
 }
