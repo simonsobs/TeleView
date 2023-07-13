@@ -137,13 +137,14 @@ export type FilterState = {
 
 
 
-export async function getCursorPerFilter({
-                                             action_type,
-                                             timestamp,
-                                             timestamp_coarse,
-                                             ufm_letter,
-                                             ufm_number,
-                                             timestamp_range
+export async function getCursorPerFilter(
+    {
+        action_type,
+        timestamp,
+        timestamp_coarse,
+        ufm_letter,
+        ufm_number,
+        timestamp_range
     }: FilterState )
     : Promise<mongoDB.FindCursor> {
     let andFilters: Array<MongoFindFilter> = []

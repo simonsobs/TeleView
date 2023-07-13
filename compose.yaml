@@ -29,6 +29,7 @@ services:
         TELEVIEW_VERBOSE: "${TELEVIEW_VERBOSE}"
     depends_on:
       - mongodb
+    image: ghcr.io/simonsobs/teleview-tvapi:LATEST
 
   tvapi:
     build:
@@ -54,6 +55,7 @@ services:
       TELEVIEW_SMURF_DATA_DIR: /volume_data/smurf
       TELEVIEW_VERBOSE: "${TELEVIEW_VERBOSE}"
       TELEVIEW_DEBUG: "${TELEVIEW_DEBUG}"
+    image: ghcr.io/simonsobs/teleview-tvapp:LATEST
 
   nginx:
     image: nginx:latest
