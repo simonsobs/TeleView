@@ -54,6 +54,8 @@ function documentIndexNav(
     viewIndexMax:number,
     maxIndex: number
 ): React.ReactElement {
+    console.log("View Index Range: " + viewIndexMin + " - " + viewIndexMax + " of " + maxIndex + " documents")
+
     const prevIndexMin = Math.max(0, viewIndexMin - documentItemLimit)
     const prevIndexMax = Math.max(viewIndexMin, 0)
     const firstIndexMax = Math.max(Math.min(documentItemLimit, prevIndexMin), 0)
@@ -71,7 +73,7 @@ function documentIndexNav(
             <div className={documentNavCellCSS}>Last</div>
             {indexElement(modifierState, filterState, 0, firstIndexMax, false, "first")}
             {indexElement(modifierState, filterState, prevIndexMin, prevIndexMax, false, "prev")}
-            {indexElement(modifierState, filterState, viewIndexMin, viewIndexMax, true, "current")}
+            {indexElement(modifierState, filterState, viewIndexMin, Math.min(maxIndex, viewIndexMax), true, "current")}
             {indexElement(modifierState, filterState, nextIndexMin, nextIndexMax, false, "next")}
             {indexElement(modifierState, filterState, lastIndexMin, maxIndex, false, "last")}
         </div>
@@ -90,6 +92,7 @@ export default function NavTable(): React.ReactElement {
     } = useContext(QueryContext)
 
     let [viewIndexMin, viewIndexMax] = getCurrentIndexRange(modifierState, documentItemLimit)
+    console.log("View Index Range: " + viewIndexMin + " - " + viewIndexMax + " of " + maxIndex + " documents")
 
     const tableNavBar = documentIndexNav(
         modifierState,
