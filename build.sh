@@ -5,8 +5,8 @@ read -r -p "TeleView Build and Upload Script for Docker images. Press any key to
 docker compose build
 # stop here to look for error messages
 echo " "
-echo "Build completed, press any key to launch the test-website"
-read -r -p "(exit and continue by using a single Ctrl+C)..."
+echo "Build completed, press any key to launch the TEST-WEBSITE"
+read -r -p "(to exit the TEST-WEBSITE, use a single Ctrl+C)..."
 docker compose up
 docker compose down
 echo " "
