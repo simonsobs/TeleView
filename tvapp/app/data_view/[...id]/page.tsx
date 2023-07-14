@@ -2,7 +2,7 @@ import React from "react";
 import * as mongoDB from "mongodb";
 import {getCursorPerFilter, FilterState} from "@/utils/mongo/request_data";
 import dataFileLink from "@/components/MenuLinks/data_files";
-import {filesBaseURI, TELEVIEW_VERBOSE} from "@/utils/config";
+import {TELEVIEW_VERBOSE, filesBaseURI} from "@/utils/config";
 import {fetchImage} from "@/components/image/get_image";
 
 

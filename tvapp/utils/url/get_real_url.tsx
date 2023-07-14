@@ -1,28 +1,32 @@
-const IS_SERVER = typeof window === "undefined";
-const env = process.env.NODE_ENV
 
-export function getURL(path: string) {
-    const baseURL = IS_SERVER
-        ? process.env.TELEVIEW_PUBLIC_SITE_URL!
-        : window.location.origin;
-    let urlString = baseURL.toString()
-    if (urlString.endsWith("/")) {
-        urlString = urlString.slice(0, -1)
+
+function joinURL(base: string, path: string) {
+    if (base.endsWith("/")) {
+        base = base.slice(0, -1)
     }
     if (path.startsWith("/")) {
         path = path.slice(1)
     }
     if (path === "") {
-        return urlString
+        return base
     }
-    return baseURL.toString() + '/' + path
+    return base + '/' + path
+
+}
+function getURL(path: string, isServer:boolean, publicSiteURL:string) {
+    const baseURL = isServer
+        ? publicSiteURL!
+        : window.location.origin;
+    return joinURL(baseURL.toString(), path)
 }
 
 
-export default function getAPIBaseURL(): string {
+export default function getBaseURL(path: string, env: string, isServer:boolean, publicSiteURL:string)
+    : string {
     if (env === "development") {
-        return "http://localhost:8111/api/"
+        return joinURL("http://localhost:8111/", path) + '/'
     } else {
-        return getURL("api/")
+        return getURL(path, isServer, publicSiteURL) + '/'
     }
 }
+
