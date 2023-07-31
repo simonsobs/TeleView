@@ -1,6 +1,8 @@
 #!/bin/bash
 clear
 read -r -p "TeleView Build and Upload Script for Docker images. Press any key to continue..."
+# initialize the production environment variables
+./init.sh
 # test the build on a local machine
 docker compose build
 # stop here to look for error messages

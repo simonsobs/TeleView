@@ -1,4 +1,6 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+# custum ignore for the teleview application (tvapp)
+.env.production
 
 # dependencies
 /node_modules
