@@ -49,7 +49,12 @@ if DEBUG:
     warn("DEBUG is True")
 
 TELEVIEW_PUBLIC_SITE_HOST = os.environ.get('TELEVIEW_PUBLIC_SITE_HOST', default='*')
-ALLOWED_HOSTS = [TELEVIEW_PUBLIC_SITE_HOST]
+stripped_host_name = str(TELEVIEW_PUBLIC_SITE_HOST)
+if ":" in stripped_host_name:
+    stripped_host_name = stripped_host_name.rsplit(":", 1)[0]
+if "//" in stripped_host_name:
+    stripped_host_name = stripped_host_name.split("//", 1)[1]
+ALLOWED_HOSTS = [stripped_host_name]
 
 
 # Application definition
