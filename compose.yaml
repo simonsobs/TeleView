@@ -43,14 +43,14 @@ services:
         DJANGO_SUPERUSER_PASSWORD: "${DJANGO_SUPERUSER_PASSWORD}"
         DJANGO_SUPERUSER_EMAIL: "${DJANGO_SUPERUSER_EMAIL}"
     volumes:
-      # django-static is written at build time by the tvapi Dockerfile
-      - "django-static:/django/static_root:ro"
       - "${TELEVIEW_SMURF_DATA_DIR}:/volume_data/smurf:ro"
+      # django-static is written at build time by the tvapi Dockerfile
+      - "django-static:/django/static_root:rw"
     depends_on:
       - mongodb
     environment:
       # these variables are environment variables that are made available in the production environment
-      TELEVIEW_PUBLIC_SITE_URL: "${TELEVIEW_PUBLIC_SITE_URL}"
+      TELEVIEW_PUBLIC_SITE_HOST: "${TELEVIEW_PUBLIC_SITE_HOST}"
       TELEVIEW_MONGODB_HOST: "${TELEVIEW_MONGODB_HOST}"
       TELEVIEW_MONGODB_PORT: "${TELEVIEW_MONGODB_PORT}"
       TELEVIEW_MONGODB_ROOT_USERNAME: "${TELEVIEW_MONGODB_ROOT_USERNAME}"

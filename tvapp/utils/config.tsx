@@ -16,16 +16,19 @@ if (TELEVIEW_VERBOSE_RAW === undefined) {
 // the file system for target files of the database
 export const IS_SERVER = typeof window === "undefined";
 export const env = process.env.NODE_ENV
-const TELEVIEW_PUBLIC_SITE_URL_RAW = process.env['TELEVIEW_PUBLIC_SITE_URL']
-export let TELEVIEW_PUBLIC_SITE_URL: string
-if (TELEVIEW_PUBLIC_SITE_URL_RAW === undefined) {
-    TELEVIEW_PUBLIC_SITE_URL = 'http://localhost/'
+const TELEVIEW_PUBLIC_SITE_HOST_RAW = process.env['TELEVIEW_PUBLIC_SITE_HOST']
+export let TELEVIEW_PUBLIC_SITE_HOST: string
+
+export let ASSET_PATH: string = ''
+if (TELEVIEW_PUBLIC_SITE_HOST_RAW === undefined) {
+    TELEVIEW_PUBLIC_SITE_HOST = 'http://localhost/'
 } else {
-    TELEVIEW_PUBLIC_SITE_URL = TELEVIEW_PUBLIC_SITE_URL_RAW
+    TELEVIEW_PUBLIC_SITE_HOST = TELEVIEW_PUBLIC_SITE_HOST_RAW
+    ASSET_PATH = TELEVIEW_PUBLIC_SITE_HOST
 }
 
-export const filesBaseURI = getBaseURL("files", env, IS_SERVER, TELEVIEW_PUBLIC_SITE_URL)
-export const apiBaseURI = getBaseURL("api", env, IS_SERVER, TELEVIEW_PUBLIC_SITE_URL)
+export const filesBaseURI = getBaseURL("files", env, IS_SERVER, TELEVIEW_PUBLIC_SITE_HOST)
+export const apiBaseURI = getBaseURL("teleview/api", env, IS_SERVER, TELEVIEW_PUBLIC_SITE_HOST)
 
 // The data view defaults
 export const documentLimitDefault = 100

@@ -1,6 +1,8 @@
 #!/bin/bash
 clear
 read -r -p "TeleView Build and Upload Script for Docker images. Press any key to continue..."
+# take the currently running continues offline, delete named volumes
+docker compose down -v
 # initialize the production environment variables
 ./init.sh
 # test the build on a local machine
@@ -10,7 +12,7 @@ echo " "
 echo "Build completed, press any key to launch the TEST-WEBSITE"
 read -r -p "(to exit the TEST-WEBSITE, use a single Ctrl+C)..."
 docker compose up
-docker compose down
+docker compose down -v
 echo " "
 echo -e "Test Website closed,"
 read -r -p "Press any key to TAG the images with version number and Git SHA..."

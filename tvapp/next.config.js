@@ -13,4 +13,6 @@ module.exports = {
             },
         ],
     },
+    basePath: '/teleview',
+    assetPrefix: 'http://localhost:8111/teleview/',
 }

@@ -1,6 +1,0 @@
-This favicon was generated using the following font:
-
-- Font Title: Noto Sans Glagolitic
-- Font Author: Copyright 2017 Google Inc. All Rights Reserved.
-- Font Source: http://fonts.gstatic.com/s/notosansglagolitic/v15/1q2ZY4-BBFBst88SU_tOj4J-4yuNF_HI4ERK4Amu7nM1.ttf
-- Font License: SIL Open Font License, 1.1 (http://scripts.sil.org/OFL))

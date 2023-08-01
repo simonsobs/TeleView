@@ -8,9 +8,10 @@ const statusBox = document.getElementById("status-box");
 let intervalID;
 
 function checkLoaded() {
+    console.log("Status Request URL: /teleview/api/get_status");
     $.ajax({
         type: "GET",
-        url: '/api/get_status',
+        url: '/teleview/api/get_status',
         success: (response) => {
             console.log("Status response", response);
             const statuses = response.map((singleStatus) => {

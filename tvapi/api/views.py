@@ -41,10 +41,10 @@ def scan_smurf_view(request):
         # post the parsed status to the database
         StatusModel.objects.update_or_create(status_type=post_type, defaults={'percent_complete': percent_complete,
                                                                               'is_complete': False})
-        request_string = request.path.split('/api/scan_smurf/', 1)[1].lower()
+        request_string = request.path.split('teleview/api/scan_smurf/', 1)[1].lower()
         thread = threading.Thread(target=do_scan_smurf, args=(None, None))
         thread.start()
-        return redirect('/api/')
+        return redirect('/teleview/api/')
     else:
         return JsonResponse({'message': f'Cannot restart, scan_smurf in progress and is {percent_complete}% complete.'}, status=400)
 

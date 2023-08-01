@@ -20,7 +20,7 @@ def post_status(status_type: str, is_complete: bool = False, percent_complete: O
         percent_complete = np.round(percent_complete, 2)
     if status_type not in allowed_status_types:
         raise ValueError(f'invalid status_type ({status_type}), allowed types: {allowed_status_types}')
-    status_uri = f'http://localhost:8000/api/post_status/{status_type}={percent_complete}'
+    status_uri = f'http://localhost:8000/teleview/api/post_status/{status_type}={percent_complete}'
     print("requests uri: ", status_uri)
     x = requests.get(status_uri)
     print("requests complete")

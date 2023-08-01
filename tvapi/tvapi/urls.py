@@ -19,9 +19,9 @@ from django.urls import path, include, re_path
 from django.views.generic import TemplateView, RedirectView
 
 urlpatterns = [
-    path('api/admin/', admin.site.urls),
-    path('api/admin', RedirectView.as_view(url='/api/admin/')),
-    path('api/', include('api.urls')),
+    path('teleview/api/admin/', admin.site.urls),
+    path('teleview/api/admin', RedirectView.as_view(url='/api/admin/')),
+    path('teleview/api/', include('api.urls')),
 ]
 
 urlpatterns += [re_path(r'^.*', TemplateView.as_view(template_name='index.html'))]

@@ -12,9 +12,20 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 
 import os
 from pathlib import Path
+from warnings import warn
+
+
+def get_bool_env(name: str, default: bool = False):
+    """Get a boolean environment variable."""
+    value = os.environ.get(name, default)
+    if value in {'', '0', 'false', 'f', 'n', 'no'}:
+        return False
+    else:
+        return bool(value)
+
 
 # triggers print statements that are useful for debugging
-VERBOSE = os.environ.get('TELEVIEW_VERBOSE', default=True)
+VERBOSE = get_bool_env('TELEVIEW_VERBOSE', default=True)
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -33,9 +44,12 @@ teleview_dir = os.path.dirname(BASE_DIR)
 SECRET_KEY = 'django-insecure-#j1oh9q%^3qtop8mi1#z6^xfh!ue#=w3xoxfoqbbjlw=r%@l+o'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get('TELEVIEW_DEBUG', default=True)
+DEBUG = get_bool_env('TELEVIEW_DEBUG', default=True)
+if DEBUG:
+    warn("DEBUG is True")
 
-ALLOWED_HOSTS = []
+TELEVIEW_PUBLIC_SITE_HOST = os.environ.get('TELEVIEW_PUBLIC_SITE_HOST', default='*')
+ALLOWED_HOSTS = [TELEVIEW_PUBLIC_SITE_HOST]
 
 
 # Application definition
@@ -127,7 +141,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
-STATIC_URL = 'api/static/'
+STATIC_URL = 'teleview/api/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static_root')
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),

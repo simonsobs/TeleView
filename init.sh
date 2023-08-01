@@ -5,7 +5,7 @@ source .env
 set +o allexport
 # write the environment variables for the NEXT.js application (.env.production)
 {
-  echo -e "TELEVIEW_PUBLIC_SITE_URL=$TELEVIEW_PUBLIC_SITE_URL";
+  echo -e "TELEVIEW_PUBLIC_SITE_HOST=$TELEVIEW_PUBLIC_SITE_HOST";
   echo -e "TELEVIEW_VERBOSE=$TELEVIEW_VERBOSE";
   echo -e "TELEVIEW_MONGODB_ROOT_USERNAME=\"$TELEVIEW_MONGODB_ROOT_USERNAME\"";
   echo -e "TELEVIEW_MONGODB_ROOT_PASSWORD=\"$TELEVIEW_MONGODB_ROOT_PASSWORD\"";
