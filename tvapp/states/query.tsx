@@ -1,6 +1,6 @@
 import { createContext, Dispatch, ReactNode, SetStateAction, useState } from "react";
 
-import {documentLimitDefault, TELEVIEW_VERBOSE} from "@/utils/config";
+import {TELEVIEW_DEFAULT_ITEMS_PER_PAGE, TELEVIEW_VERBOSE} from "@/utils/config";
 import { FilterState } from "@/utils/mongo/request_data";
 import {ModifierState} from "@/utils/url/filter";
 
@@ -39,7 +39,7 @@ export const queryContextDefaultValue: AppContextInterface = {
         ufm_number: undefined,
         timestamp_range: undefined
     },
-    documentItemLimit: documentLimitDefault,
+    documentItemLimit: TELEVIEW_DEFAULT_ITEMS_PER_PAGE,
     docArray: [],
     availableActionTypes: [],
     maxIndex: 0,
@@ -78,7 +78,7 @@ export default function QueryProvider(
     {
         modifierState,
         filterState,
-        documentItemLimit=documentLimitDefault,
+        documentItemLimit=TELEVIEW_DEFAULT_ITEMS_PER_PAGE,
         docArray = [],
         availableActionTypes = [],
         maxIndex = 0,

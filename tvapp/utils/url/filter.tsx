@@ -1,7 +1,7 @@
 import React from "react";
 import Link from 'next/link';
 
-import { documentLimitDefault } from "@/utils/config";
+import { TELEVIEW_DEFAULT_ITEMS_PER_PAGE } from "@/utils/config";
 import { FilterState } from "@/utils/mongo/request_data";
 import { simplifyRanges, timestampToIsoString } from "@/utils/time/time";
 
@@ -107,7 +107,7 @@ function parseModifierString(modifierString: string): ModifierState {
     if (modifierString === "") {
         return {}
     }
-    const [modifierPrefix, ...modifiers] = modifierString.split("*")
+    const [modifierPrefix, ...modifiers] = modifierString.split("~")
     return Object.fromEntries(modifiers.map((singleModifier): [string, Set<number | string> | [number, number]] => {
         const [modifierType, modifierValuesString] = singleModifier.split("%24")  // $
         if (rangeModifierDataTypes.has(modifierType)) {
@@ -116,7 +116,7 @@ function parseModifierString(modifierString: string): ModifierState {
                 return [modifierType, parseDocumentRange[0]]
             } else {
                 console.log("failed to parse document range")
-                return [modifierType, [0, documentLimitDefault]]
+                return [modifierType, [0, TELEVIEW_DEFAULT_ITEMS_PER_PAGE]]
             }
         } else {
             return [modifierType, parseSingleModifier(modifierValuesString)]
@@ -264,7 +264,7 @@ function encodeToURLFilter(filterState: FilterState, primaryOperator: string = "
 
 
 export function genFilterURL(modifierState: ModifierState, filterState: FilterState): string {
-    let filterURL = "/" + encodeToURLModifier(modifierState, "*", "$")
+    let filterURL = "/" + encodeToURLModifier(modifierState, "~", "$")
     filterURL += encodeToURLFilter(filterState, "!", "$")
     return filterURL
 }
@@ -373,7 +373,7 @@ export function getCurrentIndexRange(modifierState: ModifierState, documentLimit
     let startIndex = 0
     let endIndex: number
     if (typeof documentLimit === 'undefined') {
-        endIndex = documentLimitDefault
+        endIndex = TELEVIEW_DEFAULT_ITEMS_PER_PAGE
     } else {
         endIndex = documentLimit
     }

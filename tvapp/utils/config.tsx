@@ -19,19 +19,27 @@ export const env = process.env.NODE_ENV
 const TELEVIEW_PUBLIC_SITE_HOST_RAW = process.env['TELEVIEW_PUBLIC_SITE_HOST']
 export let TELEVIEW_PUBLIC_SITE_HOST: string
 
-export let ASSET_PATH: string = ''
 if (TELEVIEW_PUBLIC_SITE_HOST_RAW === undefined) {
     TELEVIEW_PUBLIC_SITE_HOST = 'http://localhost/'
 } else {
     TELEVIEW_PUBLIC_SITE_HOST = TELEVIEW_PUBLIC_SITE_HOST_RAW
-    ASSET_PATH = TELEVIEW_PUBLIC_SITE_HOST
 }
 
 export const filesBaseURI = getBaseURL("files", env, IS_SERVER, TELEVIEW_PUBLIC_SITE_HOST)
 export const apiBaseURI = getBaseURL("teleview/api", env, IS_SERVER, TELEVIEW_PUBLIC_SITE_HOST)
 
 // The data view defaults
-export const documentLimitDefault = 100
+const TELEVIEW_DEFAULT_ITEMS_PER_PAGE_RAW = process.env['TELEVIEW_DEFAULT_ITEMS_PER_PAGE']
+export let TELEVIEW_DEFAULT_ITEMS_PER_PAGE: number
+if (TELEVIEW_DEFAULT_ITEMS_PER_PAGE_RAW === undefined) {
+    TELEVIEW_DEFAULT_ITEMS_PER_PAGE = 100
+} else {
+    TELEVIEW_DEFAULT_ITEMS_PER_PAGE = parseInt(TELEVIEW_DEFAULT_ITEMS_PER_PAGE_RAW)
+    if (isNaN(TELEVIEW_DEFAULT_ITEMS_PER_PAGE)) {
+        TELEVIEW_DEFAULT_ITEMS_PER_PAGE = 100
+    }
+}
+export const documentLimitDefault = TELEVIEW_DEFAULT_ITEMS_PER_PAGE
 export const minIsoDate = "1970-01-01T00:00:00"
 export const maxIsoDate = "2100-01-01T00:00:00"
 

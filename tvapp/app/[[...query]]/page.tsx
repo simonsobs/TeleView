@@ -1,7 +1,7 @@
 import React from "react";
 
 import QueryPage from "@/components/query";
-import { documentLimitDefault } from "@/utils/config";
+import { TELEVIEW_DEFAULT_ITEMS_PER_PAGE } from "@/utils/config";
 import { nowTimestamp } from "@/utils/time/time";
 import { TELEVIEW_VERBOSE } from "@/utils/config";
 import { getCurrentIndexRange, parseFilterURL } from "@/utils/url/filter";
@@ -41,13 +41,13 @@ export default async function Page({ params }: { params: { query: Array<string> 
     // get the cursor for the current filter state
     const dataCursor = await getCursorPerFilter(filterState)
     // get a slice of the available documents
-    let [startIndex, endIndex] = getCurrentIndexRange(modifierState, documentLimitDefault)
+    let [startIndex, endIndex] = getCurrentIndexRange(modifierState, TELEVIEW_DEFAULT_ITEMS_PER_PAGE)
     const [docArray, maxIndex] = await returnDocumentsSlice(startIndex, endIndex, dataCursor)
     return (
         <QueryPage
             modifierState={modifierState}
             filterState={filterState}
-            documentItemLimit={documentLimitDefault}
+            documentItemLimit={TELEVIEW_DEFAULT_ITEMS_PER_PAGE}
             docArray={docArray}
             availableActionTypes={availableActionTypes}
             maxIndex={maxIndex}

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import React, {useContext} from "react";
 
+import {TELEVIEW_VERBOSE} from "@/utils/config";
 import {QueryContext} from "@/states/query";
 import {FilterState} from "@/utils/mongo/request_data";
 import {ModifierState, genFilterURL, getCurrentIndexRange} from "@/utils/url/filter";
@@ -54,7 +55,10 @@ function documentIndexNav(
     viewIndexMax:number,
     maxIndex: number
 ): React.ReactElement {
-    console.log("View Index Range: " + viewIndexMin + " - " + viewIndexMax + " of " + maxIndex + " documents")
+    if (TELEVIEW_VERBOSE) {
+        console.log("View Index Range: " + viewIndexMin + " - " + viewIndexMax + " of " + maxIndex + " documents")
+    }
+
 
     const prevIndexMin = Math.max(0, viewIndexMin - documentItemLimit)
     const prevIndexMax = Math.max(viewIndexMin, 0)
@@ -92,7 +96,6 @@ export default function NavTable(): React.ReactElement {
     } = useContext(QueryContext)
 
     let [viewIndexMin, viewIndexMax] = getCurrentIndexRange(modifierState, documentItemLimit)
-    console.log("View Index Range: " + viewIndexMin + " - " + viewIndexMax + " of " + maxIndex + " documents")
 
     const tableNavBar = documentIndexNav(
         modifierState,
