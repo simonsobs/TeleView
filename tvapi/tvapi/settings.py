@@ -61,8 +61,11 @@ if ":" in stripped_host_name:
     stripped_host_name = stripped_host_name.rsplit(":", 1)[0]
 if DEBUG:
     warn(f"auto-configured hostname is: {stripped_host_name}")
-ALLOWED_HOSTS = [stripped_host_name]
-
+ALLOWED_HOSTS = list(set([
+    'localhost',
+    stripped_host_name
+]))
+CSRF_TRUSTED_ORIGINS = [stripped_host_name]
 
 # Application definition
 
