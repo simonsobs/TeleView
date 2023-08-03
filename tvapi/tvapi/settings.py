@@ -65,7 +65,10 @@ ALLOWED_HOSTS = list(set([
     'localhost',
     stripped_host_name
 ]))
-CSRF_TRUSTED_ORIGINS = [stripped_host_name]
+if stripped_host_name == "localhost":
+    CSRF_TRUSTED_ORIGINS = [f"http://{stripped_host_name}"]
+else:
+    CSRF_TRUSTED_ORIGINS = [f"https://{stripped_host_name}"]
 
 # Application definition
 
