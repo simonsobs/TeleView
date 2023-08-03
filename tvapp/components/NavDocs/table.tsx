@@ -131,7 +131,7 @@ export default function NavTable(): React.ReactElement {
                             const actionType = doc['action_type']
                             const ufmLabel = doc['ufm_label']
                             const timestampCoarse = doc['timestamp_coarse']
-                            const linkString: string = 'data_view/' + ufmLabel + '/' + timestamp.toString() + '/' + actionType
+                            const linkString: string = '/data_view/' + ufmLabel + '/' + timestamp.toString() + '/' + actionType
                             return (
                                 <Link
                                     className="table-row hover:bg-tvpurple hover:text-tvblue"
