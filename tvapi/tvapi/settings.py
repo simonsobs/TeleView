@@ -54,6 +54,8 @@ if ":" in stripped_host_name:
     stripped_host_name = stripped_host_name.rsplit(":", 1)[0]
 if "//" in stripped_host_name:
     stripped_host_name = stripped_host_name.split("//", 1)[1]
+if DEBUG:
+    warn(f"auto-configured hostname is: {stripped_host_name}")
 ALLOWED_HOSTS = [stripped_host_name]
 
 
