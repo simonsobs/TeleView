@@ -32,4 +32,5 @@ module.exports = {
     },
     basePath: '/' + basePath,
     assetPrefix: assetPrefix,
+    trailingSlash: true,
 }
