@@ -50,12 +50,25 @@ if DEBUG:
 
 TELEVIEW_PUBLIC_SITE_HOST = os.environ.get('TELEVIEW_PUBLIC_SITE_HOST', default='*')
 stripped_host_name = str(TELEVIEW_PUBLIC_SITE_HOST)
-if ":" in stripped_host_name:
-    stripped_host_name = stripped_host_name.rsplit(":", 1)[0]
 if "//" in stripped_host_name:
+    # strip off the protocol (https:// or http://)
     stripped_host_name = stripped_host_name.split("//", 1)[1]
-ALLOWED_HOSTS = [stripped_host_name]
-
+if "/" in stripped_host_name:
+    # strip off the path
+    stripped_host_name = stripped_host_name.split("/", 1)[0]
+if ":" in stripped_host_name:
+    # strip off the port number
+    stripped_host_name = stripped_host_name.rsplit(":", 1)[0]
+if DEBUG:
+    warn(f"auto-configured hostname is: {stripped_host_name}")
+ALLOWED_HOSTS = list(set([
+    'localhost',
+    stripped_host_name
+]))
+if stripped_host_name == "localhost":
+    CSRF_TRUSTED_ORIGINS = [f"http://{stripped_host_name}"]
+else:
+    CSRF_TRUSTED_ORIGINS = [f"https://{stripped_host_name}"]
 
 # Application definition
 
