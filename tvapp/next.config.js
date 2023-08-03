@@ -29,7 +29,7 @@ if (TELEVIEW_DEFAULT_ITEMS_PER_PAGE_RAW === undefined) {
         TELEVIEW_DEFAULT_ITEMS_PER_PAGE = 100
     }
 }
-const defaultPage = '/~' + `document_range\$0-${TELEVIEW_DEFAULT_ITEMS_PER_PAGE}`
+const defaultPage = assetPrefix + '/~' + `document_range\$0-${TELEVIEW_DEFAULT_ITEMS_PER_PAGE}`
 
 console.log("defaultPage", defaultPage)
 
@@ -50,9 +50,10 @@ module.exports = {
     async redirects() {
         return [
             {
-                source: '/',
+                source: '/teleview',
                 destination: defaultPage,
                 permanent: true,
+                basePath: false,
             },
         ]
     },
