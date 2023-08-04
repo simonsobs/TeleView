@@ -124,6 +124,7 @@ class DatabaseEvent:
             mongo.collection_add_index(index_name='timestamp', ascending=False, unique=False)
             mongo.collection_add_index(index_name='ufm_number', ascending=True, unique=False)
             mongo.collection_add_index(index_name='action_type', ascending=True, unique=False)
+            mongo.collection_add_index(index_name='stream_id', ascending=True, unique=False)
             self.send_status(status_type=status_type, is_complete=True)
 
 

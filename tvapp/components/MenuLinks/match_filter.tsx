@@ -7,6 +7,7 @@ import filterUpdateLink, {ModifierState} from "@/utils/url/filter";
 
 type MatchFilterMenuInput = {
     availableActionTypes:  Array<string>
+    availableStreamIDs: Array<string>,
     modifierState: ModifierState,
     filterState: FilterState
 }
@@ -30,16 +31,28 @@ function matchLinkWrapper(filterLinks: Array<React.ReactElement>): React.ReactEl
 }
 
 
-export default function MatchFilterMenu({availableActionTypes, modifierState, filterState}: MatchFilterMenuInput) : React.ReactElement {
+export default function MatchFilterMenu({
+                                            availableActionTypes,
+                                            availableStreamIDs,
+                                            modifierState,
+                                            filterState
+                                        }: MatchFilterMenuInput) : React.ReactElement {
     const actionTypeFilterLinks = availableActionTypes.map((actionType: string) => {
         return filterUpdateLink(modifierState, filterState, 'action_type', actionType, true)
     })
+    const streamIDFilterLinks = availableStreamIDs.map((streamID: string) => {
+        return filterUpdateLink(modifierState, filterState, 'stream_id', streamID, true)
+    })
     return (
         <div className="flex flex-col">
-            <div className="text-2xl text-tvgrey ">
-                {'action_type'}
+            <div className="text-2xl text-tvgrey">
+                {'Action Type'}
             </div>
             {matchLinkWrapper(actionTypeFilterLinks)}
+            <div className="text-2xl text-tvgrey mt-4">
+                {'Stream ID'}
+            </div>
+            {matchLinkWrapper(streamIDFilterLinks)}
         </div>
     )
 }

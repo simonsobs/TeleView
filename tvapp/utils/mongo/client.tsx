@@ -1,4 +1,4 @@
-const {MongoClient} = require('mongodb');
+import {MongoClient} from 'mongodb';
 import * as mongoDB from "mongodb";
 import { mongoURI } from "@/utils/config";
 

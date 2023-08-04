@@ -5,10 +5,10 @@ import React, {ReactElement} from "react";
 
 import QueryProvider from "@/states/query";
 import MenuBar from "@/components/menu/menu_bar";
+import {ModifierState} from "@/utils/url/filter";
 import NavTable from "@/components/NavDocs/table";
-import { ModifierState } from "@/utils/url/filter";
 import MenuViewer from "@/components/menu/menu_view";
-import { FilterState } from "@/utils/mongo/request_data";
+import {FilterState} from "@/utils/mongo/request_data";
 
 
 export function QueryClient(): ReactElement {
@@ -36,6 +36,7 @@ type QueryClientInput = {
     documentItemLimit: number
     docArray: Array<mongo.Document>
     availableActionTypes: Array<string>
+    availableStreamIDs: Array<string>
     maxIndex: number
     timestampDatabaseMin: number
     timestampDatabaseMax: number
@@ -43,7 +44,18 @@ type QueryClientInput = {
 
 
 // Here is the entry point to the client side components using the data from the server
-export default function QueryPage({modifierState, filterState, documentItemLimit, docArray, availableActionTypes, maxIndex, timestampDatabaseMin, timestampDatabaseMax} : QueryClientInput): React.ReactElement {
+export default function QueryPage(
+    {
+        modifierState,
+        filterState,
+        documentItemLimit,
+        docArray,
+        availableActionTypes,
+        availableStreamIDs,
+        maxIndex,
+        timestampDatabaseMin,
+        timestampDatabaseMax
+    } : QueryClientInput): React.ReactElement {
     return (
         <QueryProvider
             modifierState={modifierState}
@@ -51,6 +63,7 @@ export default function QueryPage({modifierState, filterState, documentItemLimit
             documentItemLimit={documentItemLimit}
             docArray={docArray}
             availableActionTypes={availableActionTypes}
+            availableStreamIDs={availableStreamIDs}
             maxIndex={maxIndex}
             timestampDatabaseMin={timestampDatabaseMin}
             timestampDatabaseMax={timestampDatabaseMax}

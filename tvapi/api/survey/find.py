@@ -67,6 +67,7 @@ class SmurfDataLocation(NamedTuple):
     action_type: str
     path: str
     ufm_label: str
+    stream_id: str
     outputs: Optional[List[str]] = None
     plots: Optional[List[str]] = None
 
@@ -95,9 +96,9 @@ def smurf(timestamp_min: int, timestamp_max: int, smurf_data_path: str, verbose:
             # the data is likely to be outside the data is outside the requested time range
             continue
         full_path_coarse_time_dir = os.path.join(smurf_data_path, str(coarse_time_int))
-        for ufm_dir in get_ufm_dirs(parent_dir=full_path_coarse_time_dir):
-            ufm_letter, ufm_number = parse_ufm_name(ufm_dir)
-            full_path_ufm_dir = os.path.join(full_path_coarse_time_dir, ufm_dir)
+        for stream_id in get_ufm_dirs(parent_dir=full_path_coarse_time_dir):
+            ufm_letter, ufm_number = parse_ufm_name(stream_id)
+            full_path_ufm_dir = os.path.join(full_path_coarse_time_dir, stream_id)
             for action_dir in os.listdir(full_path_ufm_dir):
                 full_path_action_dir = os.path.join(full_path_ufm_dir, action_dir)
                 timestamp_int, action_type = parse_action_name(action_dir)
@@ -129,6 +130,7 @@ def smurf(timestamp_min: int, timestamp_max: int, smurf_data_path: str, verbose:
                     action_type=action_type,
                     path=path_formatted,
                     ufm_label=f"{ufm_letter.upper()}v{ufm_number}",
+                    stream_id=stream_id,
                     outputs=data_files_by_type['outputs'],
                     plots=data_files_by_type['plots'],
                 )
