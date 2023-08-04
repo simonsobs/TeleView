@@ -21,6 +21,7 @@ export default async function Page({ params }: { params: { id: Array<string> } }
         timestamp: new Set([timestamp]),
         ufm_letter: new Set([ufm_letter]),
         ufm_number: new Set([ufm_number]),
+        stream_id: undefined,
         timestamp_range: undefined,
         timestamp_coarse: undefined,
     }

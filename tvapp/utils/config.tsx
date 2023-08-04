@@ -8,7 +8,7 @@ const TELEVIEW_VERBOSE_RAW = process.env['TELEVIEW_VERBOSE']
 
 export let TELEVIEW_VERBOSE: boolean
 if (TELEVIEW_VERBOSE_RAW === undefined) {
-    TELEVIEW_VERBOSE = true
+    TELEVIEW_VERBOSE = false
 } else {
     TELEVIEW_VERBOSE = TELEVIEW_VERBOSE_RAW !== "0"
 }
@@ -39,7 +39,6 @@ if (TELEVIEW_DEFAULT_ITEMS_PER_PAGE_RAW === undefined) {
         TELEVIEW_DEFAULT_ITEMS_PER_PAGE = 100
     }
 }
-export const documentLimitDefault = TELEVIEW_DEFAULT_ITEMS_PER_PAGE
 export const minIsoDate = "1970-01-01T00:00:00"
 export const maxIsoDate = "2100-01-01T00:00:00"
 

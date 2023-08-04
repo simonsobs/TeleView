@@ -10,6 +10,7 @@ export default function  MenuViewer (): React.ReactElement {
         modifierState,
         filterState,
         availableActionTypes,
+        availableStreamIDs,
         timestampDatabaseMin,
         timestampDatabaseMax,
         selectedTimestampMin,
@@ -21,16 +22,14 @@ export default function  MenuViewer (): React.ReactElement {
         isMatchMenuOpen,
         isTimeRangeMenuOpen,
         closeAllMenus
-    } = useContext(QueryContext)
-
-
+    } = useContext(QueryContext);
 
     if (isAnyMenuOpen) {
         if (isRemoveFilterMenuOpen) {
             return (
                 <>
                     <ClickBarrier onClick={closeAllMenus}/>
-                    <div className="h-full w-auto absolute top-0 left-0 z-40">
+                    <div className="h-full w-auto absolute top-0 left-0 z-40 overflow-y-auto">
                         <Drawer
                             closeCallback={closeAllMenus}
                             title={"Remove Filters Menu"}>
@@ -43,11 +42,11 @@ export default function  MenuViewer (): React.ReactElement {
             return (
                 <>
                     <ClickBarrier onClick={closeAllMenus}/>
-                    <div className="h-full w-auto absolute top-0 left-0 z-40">
+                    <div className="h-full w-auto absolute top-0 left-0 z-40 overflow-y-auto">
                         <Drawer
                             closeCallback={closeAllMenus}
                             title={"Match Filters Menu"}>
-                            {MatchFilterMenu({availableActionTypes, modifierState, filterState})}
+                            {MatchFilterMenu({availableActionTypes, availableStreamIDs, modifierState, filterState})}
                         </Drawer>
                     </div>
                 </>
@@ -56,7 +55,7 @@ export default function  MenuViewer (): React.ReactElement {
             return (
                 <>
                     <ClickBarrier onClick={closeAllMenus}/>
-                    <div className="h-full w-auto absolute top-0 left-0 z-40">
+                    <div className="h-full w-auto absolute top-0 left-0 z-40  overflow-y-auto">
                         <Drawer
                             closeCallback={closeAllMenus}
                             title={"Time Range Menu"}>

@@ -1,9 +1,9 @@
 import React from "react";
 import Link from 'next/link';
 
-import { TELEVIEW_DEFAULT_ITEMS_PER_PAGE } from "@/utils/config";
-import { FilterState } from "@/utils/mongo/request_data";
-import { simplifyRanges, timestampToIsoString } from "@/utils/time/time";
+import {FilterState} from "@/utils/mongo/request_data";
+import {TELEVIEW_DEFAULT_ITEMS_PER_PAGE} from "@/utils/config";
+import {simplifyRanges, timestampToIsoString} from "@/utils/time/time";
 
 
 const rangeModifierDataTypes = new Set(['document_range'])
@@ -140,6 +140,7 @@ export function parseFilterURL(filterURL: Array<string> | undefined, verbose: bo
         timestamp_coarse: undefined,
         ufm_letter: undefined,
         ufm_number: undefined,
+        stream_id: undefined,
         timestamp_range: undefined,
     }
     if (paramsStrings.length > 1) {
@@ -161,6 +162,9 @@ export function parseFilterURL(filterURL: Array<string> | undefined, verbose: bo
                     break;
                 case "ufm_number":
                     filterState.ufm_number = parseSingleModifierNumber(modifierValuesString)
+                    break;
+                case "stream_id":
+                    filterState.stream_id = parseSingleModifierString(modifierValuesString)
                     break;
                 case "timestamp_range":
                     filterState.timestamp_range = simplifyRanges(parseModifierRanges(modifierValuesString))
@@ -247,6 +251,9 @@ function encodeToURLFilter(filterState: FilterState, primaryOperator: string = "
                 break;
             case "ufm_number":
                 stateURL += encodeToURFilterKeyValue(key, filterState.ufm_number, primaryOperator, secondaryOperator)
+                break;
+            case "stream_id":
+                stateURL += encodeToURFilterKeyValue(key, filterState.stream_id, primaryOperator, secondaryOperator)
                 break;
             case "timestamp_range":
                 let simplifiedTimeStampRange: Array<[number, number]> | undefined = undefined
@@ -358,6 +365,9 @@ function addSubtractFilter(filterState: FilterState, filterKey: string, filterVa
             break;
         case "ufm_number":
             if (typeof filterValue === "number") newFilterState.ufm_number = addSubtractFilterNumber(filterValue, filterState.ufm_number, add)
+            break;
+        case "stream_id":
+            if (typeof filterValue === "string") newFilterState.stream_id = addSubtractFilterString(filterValue, filterState.stream_id, add)
             break;
         case "timestamp_range":
             if (typeof filterValue === "object") newFilterState.timestamp_range = addSubtractFilterRange(filterValue, filterState.timestamp_range, add)
@@ -491,6 +501,12 @@ export function filterIteratorMap(filterState: FilterState): FilterIteratorMapIn
             case "ufm_letter":
                 if (filterState.ufm_letter !== undefined) {
                     filterValues = Array.from(filterState.ufm_letter)
+                }
+                break
+            case "stream_id":
+                if (filterState.stream_id !== undefined) {
+                    filterValues = Array.from(filterState.stream_id)
+                    console.log("FilterIteratorMap: stream_id: ", filterValues)
                 }
                 break
             case "timestamp_range":

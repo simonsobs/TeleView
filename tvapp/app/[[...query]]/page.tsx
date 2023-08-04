@@ -6,6 +6,7 @@ import { nowTimestamp } from "@/utils/time/time";
 import { TELEVIEW_VERBOSE } from "@/utils/config";
 import { getCurrentIndexRange, parseFilterURL } from "@/utils/url/filter";
 import getDataMap, { getCursorPerFilter, returnDocumentsSlice } from "@/utils/mongo/request_data";
+import {findAvailableStrings} from "@/utils/text_parse";
 
 
 
@@ -20,15 +21,9 @@ export default async function Page({ params }: { params: { query: Array<string> 
     const valuesMap = await getDataMap()
     // Parse Action-types from the database
     const actionTypes = valuesMap.get("actionTypes")
-    const availableActionTypes = actionTypes.filter((actionType: string) => {
-        const filterValues = filterState['action_type']
-        if (filterValues !== undefined) {
-            return !filterValues.has(actionType)
-        }
-        return true
-    })
+    const availableActionTypes = findAvailableStrings(actionTypes, filterState.action_type)
     // Parse Time data from the database
-    const coarseTimestamps = valuesMap.get("coarseTimestamps")
+    //const coarseTimestamps = valuesMap.get("coarseTimestamps")
     const timestamps = valuesMap.get("timestamps")
     let timestampDatabaseMin: number | undefined = parseInt(timestamps[0])
     if (timestampDatabaseMin === undefined || Number.isNaN(timestampDatabaseMin)) {
@@ -38,6 +33,9 @@ export default async function Page({ params }: { params: { query: Array<string> 
     if (timestampDataBaseMax === undefined || Number.isNaN(timestampDataBaseMax)) {
         timestampDataBaseMax = nowTimestamp()
     }
+    // parse the streamIDs from the database
+    const streamIDs = valuesMap.get("streamIDs")
+    const availableStreamIDs = findAvailableStrings(streamIDs, filterState.stream_id)
     // get the cursor for the current filter state
     const dataCursor = await getCursorPerFilter(filterState)
     // get a slice of the available documents
@@ -50,6 +48,7 @@ export default async function Page({ params }: { params: { query: Array<string> 
             documentItemLimit={TELEVIEW_DEFAULT_ITEMS_PER_PAGE}
             docArray={docArray}
             availableActionTypes={availableActionTypes}
+            availableStreamIDs={availableStreamIDs}
             maxIndex={maxIndex}
             timestampDatabaseMin={timestampDatabaseMin}
             timestampDatabaseMax={timestampDataBaseMax}

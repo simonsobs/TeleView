@@ -1,8 +1,9 @@
 import Link from "next/link";
 import React, {useContext} from "react";
 
-import {TELEVIEW_VERBOSE} from "@/utils/config";
 import {QueryContext} from "@/states/query";
+import {TELEVIEW_VERBOSE} from "@/utils/config";
+import {timestampToIsoString} from "@/utils/time/time";
 import {FilterState} from "@/utils/mongo/request_data";
 import {ModifierState, genFilterURL, getCurrentIndexRange} from "@/utils/url/filter";
 
@@ -114,11 +115,13 @@ export default function NavTable(): React.ReactElement {
             <div className="flex justify-center text-tvgry border-4 bg-tvbrown border-tvgreen overflow-auto">
                 <div className="table-auto">
                     <div className="table-header-group">
-                        <div className="table-row">
-                            <div className="table-cell px-4 py-2">Timestamp</div>
+                        <div className="table-row text-center">
                             <div className="table-cell px-4 py-2">Action Type</div>
+                            <div className="table-cell px-4 py-2">Date Time (UTC)</div>
+                            <div className="table-cell px-4 py-2">Timestamp</div>
                             <div className="table-cell px-4 py-2">UFM Label</div>
                             <div className="table-cell px-4 py-2">Timestamp Course</div>
+                            <div className="table-cell px-4 py-2">Stream ID</div>
                         </div>
                     </div>
                     <div className="table-row-group">
@@ -130,7 +133,9 @@ export default function NavTable(): React.ReactElement {
                             }
                             const actionType = doc['action_type']
                             const ufmLabel = doc['ufm_label']
+                            const streamId = doc['stream_id']
                             const timestampCoarse = doc['timestamp_coarse']
+                            const [date, time] = timestampToIsoString(timestamp).split('T')
                             const linkString: string = '/data_view/' + ufmLabel + '/' + timestamp.toString() + '/' + actionType
                             return (
                                 <Link
@@ -140,16 +145,22 @@ export default function NavTable(): React.ReactElement {
                                     prefetch={false}
                                 >
                                     <div className="table-cell border px-4 py-2">
-                                        {timestamp}
+                                        {actionType}
                                     </div>
                                     <div className="table-cell border px-4 py-2">
-                                        {actionType}
+                                        {date} {time}
+                                    </div>
+                                    <div className="table-cell border px-4 py-2">
+                                        {timestamp}
                                     </div>
                                     <div className="table-cell border px-4 py-2">
                                         {ufmLabel}
                                     </div>
                                     <div className="table-cell border px-4 py-2">
                                         {timestampCoarse}
+                                    </div>
+                                    <div className="table-cell border px-4 py-2">
+                                        {streamId}
                                     </div>
                                 </Link>
                             )

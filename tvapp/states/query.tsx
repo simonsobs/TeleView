@@ -1,8 +1,9 @@
 import { createContext, Dispatch, ReactNode, SetStateAction, useState } from "react";
 
-import {TELEVIEW_DEFAULT_ITEMS_PER_PAGE, TELEVIEW_VERBOSE} from "@/utils/config";
-import { FilterState } from "@/utils/mongo/request_data";
 import {ModifierState} from "@/utils/url/filter";
+import {streamIDToUfmNumber} from "@/utils/text_parse";
+import {FilterState} from "@/utils/mongo/request_data";
+import {TELEVIEW_DEFAULT_ITEMS_PER_PAGE, TELEVIEW_VERBOSE} from "@/utils/config";
 
 
 interface AppContextInterface {
@@ -11,6 +12,7 @@ interface AppContextInterface {
     documentItemLimit: number,
     docArray: Array<any>,
     availableActionTypes: Array<string>,
+    availableStreamIDs: Array<string>,
     maxIndex: number,
     timestampDatabaseMin: number,
     timestampDatabaseMax: number,
@@ -37,11 +39,13 @@ export const queryContextDefaultValue: AppContextInterface = {
         timestamp_coarse: undefined,
         ufm_letter: undefined,
         ufm_number: undefined,
+        stream_id: undefined,
         timestamp_range: undefined
     },
     documentItemLimit: TELEVIEW_DEFAULT_ITEMS_PER_PAGE,
     docArray: [],
     availableActionTypes: [],
+    availableStreamIDs: [],
     maxIndex: 0,
     timestampDatabaseMin: 0,
     timestampDatabaseMax: 4102444800,
@@ -69,6 +73,7 @@ type QueryProviderInput = {
     documentItemLimit: number
     docArray: Array<any>
     availableActionTypes: Array<string>,
+    availableStreamIDs: Array<string>,
     maxIndex: number
     timestampDatabaseMin: number
     timestampDatabaseMax: number
@@ -81,11 +86,14 @@ export default function QueryProvider(
         documentItemLimit=TELEVIEW_DEFAULT_ITEMS_PER_PAGE,
         docArray = [],
         availableActionTypes = [],
+        availableStreamIDs = [],
         maxIndex = 0,
         timestampDatabaseMin = 0,
         timestampDatabaseMax = 0,
         children
     } : QueryProviderInput) {
+    // sort the stream IDs so that they are in numerical order
+    availableStreamIDs.sort((a, b) => streamIDToUfmNumber(a) - streamIDToUfmNumber(b));
     /* changes in these states will trigger a re-render of components that use them */
     // timestamp range states
     const [selectedTimestampMin, setSelectedTimestampMin] = useState<number>(timestampDatabaseMin);
@@ -116,6 +124,7 @@ export default function QueryProvider(
             documentItemLimit,
             docArray,
             availableActionTypes,
+            availableStreamIDs,
             maxIndex,
             timestampDatabaseMin,
             timestampDatabaseMax,

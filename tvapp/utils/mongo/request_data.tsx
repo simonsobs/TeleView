@@ -68,29 +68,21 @@ export default async function getDataMap(databaseName : string = primary_databas
     const actionTypesPromise = mongoQuery(listActionTypes)
     const coarseTimestampsPromise = mongoQuery(listCoarseTimestamps)
     const timestampsPromise = mongoQuery(() => listDistinct('timestamp', databaseName, collectionName))
+    const streamIdPromise = mongoQuery(() => listDistinct('stream_id', databaseName, collectionName))
     const promiseArray  = await Promise.all([
         actionTypesPromise,
         coarseTimestampsPromise,
-        timestampsPromise
+        timestampsPromise,
+        streamIdPromise,
     ]);
     return new Map([
         ["actionTypes", promiseArray[0]],
         ["coarseTimestamps", promiseArray[1]],
         ["timestamps", promiseArray[2]],
+        ["streamIDs", promiseArray[3]],
     ])
 }
 
-export async function listTimesPerAction(action_type: string) : Promise<Array<number>> {
-    const singleActionQuery = async (): Promise<Array<number>> => {
-        if (TELEVIEW_VERBOSE) {
-            console.log("  Query: ListTimesPerAction: ", action_type)
-        }
-        const collection = await getCollection()
-        const timestamps = await collection.distinct('timestamp', {'action_type': action_type});
-        return timestamps.map((x: string) => parseInt(x));
-    }
-    return await mongoQuery(singleActionQuery)
-}
 
 
 type MongoFindFilter = {[key: string]: string | number | {[key: string]: any} | Array<any>}
@@ -132,6 +124,7 @@ export type FilterState = {
     timestamp_coarse: undefined | Set<number>,
     ufm_letter: undefined  | Set<string>,
     ufm_number: undefined | Set<number>,
+    stream_id: undefined | Set<string>,
     timestamp_range: undefined | Array<[number, number]>
 }
 
@@ -144,6 +137,7 @@ export async function getCursorPerFilter(
         timestamp_coarse,
         ufm_letter,
         ufm_number,
+        stream_id,
         timestamp_range
     }: FilterState )
     : Promise<mongoDB.FindCursor> {
@@ -153,6 +147,7 @@ export async function getCursorPerFilter(
     if (timestamp_coarse) {andFilters.push(getMatchFilter('timestamp_coarse', timestamp_coarse))}
     if (ufm_letter) {andFilters.push(getMatchFilter('ufm_letter', ufm_letter))}
     if (ufm_number) {andFilters.push(getMatchFilter('ufm_number', ufm_number))}
+    if (stream_id) {andFilters.push(getMatchFilter('stream_id', stream_id))}
     if (timestamp_range) {andFilters.push(getRangeFilter('timestamp', timestamp_range))}
     const filter = wrapFilter('$and', andFilters)
     const singleActionQuery = async (): Promise<mongoDB.FindCursor> => {
@@ -160,7 +155,7 @@ export async function getCursorPerFilter(
             console.log("  Query: getCursorPerFilter, Filter: ", filter)
         }
         const collection = await getCollection()
-        return collection.find(filter);
+        return collection.find(filter).sort({'timestamp': -1, 'ufm_number': 1})
     }
     return await mongoQuery(singleActionQuery)
 }
