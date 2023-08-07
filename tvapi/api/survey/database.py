@@ -5,7 +5,7 @@ from typing import Union, Optional
 import numpy as np
 
 from api.mongo.operate import MongoOperate
-from api.survey.post_status import post_status, allowed_status_types
+from api.survey.post_status import post_status, allowed_event_types, allowed_status_types
 from api.mongo.configs import REPORTS_STATUS_TIMEOUT_SECONDS, REPORTS_STATUS_MINIMUM_WAIT_SECONDS, VERBOSE
 from api.survey.find import find_all_data, convert_coarse_time_to_timestamp
 
@@ -27,8 +27,8 @@ class DatabaseEvent:
         self.verbose = verbose
         # verify the event type
         self.event_type = event_type.lower().strip()
-        if self.event_type not in allowed_status_types:
-            raise ValueError(f'invalid event_type ({self.event_type}), allowed types: {allowed_status_types}')
+        if self.event_type not in allowed_event_types:
+            raise ValueError(f'invalid event_type ({self.event_type}), allowed types: {allowed_event_types}')
         # convert min timestamp to an int
         if timestamp_min is None:
             timestamp_min = 0
@@ -66,8 +66,8 @@ class DatabaseEvent:
         self.lowest_timestamp_coarse_found = None
 
         # finally, trigger the appropriate event
-        if self.event_type == 'scan_smurf':
-            self.upload_data(collection_name='smurf', remove_old_data=True)
+        if self.event_type == 'full_reset':
+            self.upload_data(remove_old_data=True)
 
     def send_status(self, status_type: str, is_complete: bool = False, timestamp_coarse: Optional[int] = None):
         if is_complete:
@@ -104,40 +104,42 @@ class DatabaseEvent:
                         post_status(status_type=status_type, percent_complete=percent_complete, verbose=self.verbose)
                         self.last_percent_complete = percent_complete
 
-    def upload_data(self, collection_name: str = 'smurf', remove_old_data: bool = False):
+    def upload_data(self, remove_old_data: bool = False):
         """Upload all data to the mongoDB database"""
-        with MongoOperate(verbose=self.verbose, database_name_to_select='files',
-                          collection_name_to_select=collection_name) as mongo:
-            status_type = f'scan_{collection_name}'
-            self.send_status(status_type=status_type, is_complete=False, timestamp_coarse=None)
-            # drop the old data if requested
-            if remove_old_data:
-                mongo.collection_remove_if_exists(collection_name=collection_name)
-            # upload all the data from the generator to the database
-            all_data = find_all_data(verbose=self.verbose, generator_mode=True,
-                                     timestamp_min=self.timestamp_min, timestamp_max=self.timestamp_max)
-            for record in all_data[collection_name]:
-                mongo.post(document=record.to_dict())
-                self.send_status(status_type=status_type, timestamp_coarse=record.timestamp_coarse)
-            # add indexes to the database to make sorting faster
-            mongo.collection_add_index(index_name='timestamp_coarse', ascending=False, unique=False)
-            mongo.collection_add_index(index_name='timestamp', ascending=False, unique=False)
-            mongo.collection_add_index(index_name='ufm_number', ascending=True, unique=False)
-            mongo.collection_add_index(index_name='action_type', ascending=True, unique=False)
-            mongo.collection_add_index(index_name='stream_id', ascending=True, unique=False)
-            self.send_status(status_type=status_type, is_complete=True)
+        all_data = find_all_data(verbose=self.verbose, generator_mode=True,
+                                 timestamp_min=self.timestamp_min, timestamp_max=self.timestamp_max)
+        for data_type, data_iterator in all_data.items():
+            with MongoOperate(verbose=self.verbose, database_name_to_select='files',
+                              collection_name_to_select=data_type) as mongo:
+                status_type = f'scan_{data_type}'
+                self.send_status(status_type=status_type, is_complete=False, timestamp_coarse=None)
+                # drop the old data if requested
+                if remove_old_data:
+                    mongo.collection_remove_if_exists(collection_name=data_type)
+                # upload all the data from the generator to the database
+                for record in data_iterator:
+                    mongo.post(document=record.to_dict())
+                    self.send_status(status_type=status_type, timestamp_coarse=record.timestamp_coarse)
+                # add indexes to the database to make sorting faster
+                mongo.collection_add_index(index_name='timestamp_coarse', ascending=False, unique=False)
+                mongo.collection_add_index(index_name='timestamp', ascending=False, unique=False)
+                mongo.collection_add_index(index_name='ufm_number', ascending=True, unique=False)
+                mongo.collection_add_index(index_name='action_type', ascending=True, unique=False)
+                mongo.collection_add_index(index_name='stream_id', ascending=True, unique=False)
+                mongo.collection_add_index(index_name='platform', ascending=True, unique=False)
+                self.send_status(status_type=status_type, is_complete=True)
 
 
-def do_scan_smurf(timestamp_min: Optional[Union[datetime, int, float, None]] = None,
+def do_full_reset(timestamp_min: Optional[Union[datetime, int, float, None]] = None,
                   timestamp_max: Optional[Union[datetime, int, float, None]] = None,):
-    DatabaseEvent(event_type='scan_smurf',
+    DatabaseEvent(event_type='full_reset',
                   timestamp_min=timestamp_min,
                   timestamp_max=timestamp_max,
                   verbose=VERBOSE)
 
 
 if __name__ == '__main__':
-    DatabaseEvent(event_type='scan_smurf',
+    DatabaseEvent(event_type='full_reset',
                   timestamp_min=datetime(2020, 1, 1, 0, 0, 0, tzinfo=timezone.utc),
                   timestamp_max=time(),
                   verbose=True)

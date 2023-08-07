@@ -1,8 +1,9 @@
 import mongo from "mongodb";
-
 import * as mongoDB from "mongodb";
-import { primary_database, primary_collection, TELEVIEW_VERBOSE } from "@/utils/config";
+
 import clientPromise from "@/utils/mongo/client";
+import { primary_database, primary_collection, TELEVIEW_VERBOSE } from "@/utils/config";
+
 
 
 // database, collection, and query utilities
@@ -69,17 +70,20 @@ export default async function getDataMap(databaseName : string = primary_databas
     const coarseTimestampsPromise = mongoQuery(listCoarseTimestamps)
     const timestampsPromise = mongoQuery(() => listDistinct('timestamp', databaseName, collectionName))
     const streamIdPromise = mongoQuery(() => listDistinct('stream_id', databaseName, collectionName))
+    const platformPromise = mongoQuery(() => listDistinct('platform', databaseName, collectionName))
     const promiseArray  = await Promise.all([
         actionTypesPromise,
         coarseTimestampsPromise,
         timestampsPromise,
         streamIdPromise,
+        platformPromise,
     ]);
     return new Map([
         ["actionTypes", promiseArray[0]],
         ["coarseTimestamps", promiseArray[1]],
         ["timestamps", promiseArray[2]],
         ["streamIDs", promiseArray[3]],
+        ["platforms", promiseArray[4]],
     ])
 }
 
@@ -125,6 +129,7 @@ export type FilterState = {
     ufm_letter: undefined  | Set<string>,
     ufm_number: undefined | Set<number>,
     stream_id: undefined | Set<string>,
+    platform: undefined | Set<string>
     timestamp_range: undefined | Array<[number, number]>
 }
 
@@ -138,6 +143,7 @@ export async function getCursorPerFilter(
         ufm_letter,
         ufm_number,
         stream_id,
+        platform,
         timestamp_range
     }: FilterState )
     : Promise<mongoDB.FindCursor> {
@@ -148,6 +154,7 @@ export async function getCursorPerFilter(
     if (ufm_letter) {andFilters.push(getMatchFilter('ufm_letter', ufm_letter))}
     if (ufm_number) {andFilters.push(getMatchFilter('ufm_number', ufm_number))}
     if (stream_id) {andFilters.push(getMatchFilter('stream_id', stream_id))}
+    if (platform) {andFilters.push(getMatchFilter('platform', platform))}
     if (timestamp_range) {andFilters.push(getRangeFilter('timestamp', timestamp_range))}
     const filter = wrapFilter('$and', andFilters)
     const singleActionQuery = async (): Promise<mongoDB.FindCursor> => {
@@ -155,7 +162,7 @@ export async function getCursorPerFilter(
             console.log("  Query: getCursorPerFilter, Filter: ", filter)
         }
         const collection = await getCollection()
-        return collection.find(filter).sort({'timestamp': -1, 'ufm_number': 1})
+        return collection.find(filter).sort({'timestamp': -1, 'platform': 1, 'ufm_number': 1})
     }
     return await mongoQuery(singleActionQuery)
 }

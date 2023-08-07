@@ -3,10 +3,10 @@ import Link from "next/link";
 import React from "react";
 
 
-import { minIsoDate, maxIsoDate } from "@/utils/config";
-import { FilterState } from "@/utils/mongo/request_data";
-import { filterUpdateURI, ModifierState } from "@/utils/url/filter";
-import { timestampToIsoString, isoStringToTimestamp } from "@/utils/time/time";
+import {minIsoDate, maxIsoDate} from "@/utils/config";
+import {FilterState} from "@/utils/mongo/request_data";
+import {filterUpdateURI, ModifierState} from "@/utils/url/filter";
+import {timestampToIsoString, isoStringToTimestamp} from "@/utils/time/time";
 
 
 type SelectTimeInput = {

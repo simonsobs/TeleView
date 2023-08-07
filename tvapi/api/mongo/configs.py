@@ -14,9 +14,9 @@ MONGODB_ROOT_USERNAME = os.environ.get('TELEVIEW_MONGODB_ROOT_USERNAME', default
 MONGODB_ROOT_PASSWORD = os.environ.get('TELEVIEW_MONGODB_ROOT_PASSWORD', default='pass')
 CONNECTION_STRING_DEFAULT = f'mongodb://{MONGODB_ROOT_USERNAME}:{MONGODB_ROOT_PASSWORD}@{MONGODB_HOST}:{MONGODB_PORT}/?authMechanism=DEFAULT'
 
-test_data_location_for_default = os.path.join(teleview_dir, 'test_data', 'smurf')
-# get the data locations from the environment variable TELEVIEW_LEVEL3_DATA_DIRECTORIES
-SMURF_DATA_DIR = os.environ.get('TELEVIEW_SMURF_DATA_DIR', test_data_location_for_default)
+test_data_location_for_default = os.path.join(teleview_dir, 'test_data')
+# get the data locations from the environment variable PLATFORMS_DATA_DIR
+PLATFORMS_DATA_DIR = os.environ.get('PLATFORMS_DATA_DIR', test_data_location_for_default)
 
 EXTRA_TIME_SECONDS_FOR_COARSE_TIME = 60 * 60 * 12  # 12 hours
 SEND_PROCESS_STATUS = True

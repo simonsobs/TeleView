@@ -13,6 +13,7 @@ interface AppContextInterface {
     docArray: Array<any>,
     availableActionTypes: Array<string>,
     availableStreamIDs: Array<string>,
+    availablePlatforms: Array<string>,
     maxIndex: number,
     timestampDatabaseMin: number,
     timestampDatabaseMax: number,
@@ -40,12 +41,14 @@ export const queryContextDefaultValue: AppContextInterface = {
         ufm_letter: undefined,
         ufm_number: undefined,
         stream_id: undefined,
+        platform: undefined,
         timestamp_range: undefined
     },
     documentItemLimit: TELEVIEW_DEFAULT_ITEMS_PER_PAGE,
     docArray: [],
     availableActionTypes: [],
     availableStreamIDs: [],
+    availablePlatforms: [],
     maxIndex: 0,
     timestampDatabaseMin: 0,
     timestampDatabaseMax: 4102444800,
@@ -74,6 +77,7 @@ type QueryProviderInput = {
     docArray: Array<any>
     availableActionTypes: Array<string>,
     availableStreamIDs: Array<string>,
+    availablePlatforms: Array<string>,
     maxIndex: number
     timestampDatabaseMin: number
     timestampDatabaseMax: number
@@ -87,6 +91,7 @@ export default function QueryProvider(
         docArray = [],
         availableActionTypes = [],
         availableStreamIDs = [],
+        availablePlatforms = [],
         maxIndex = 0,
         timestampDatabaseMin = 0,
         timestampDatabaseMax = 0,
@@ -125,6 +130,7 @@ export default function QueryProvider(
             docArray,
             availableActionTypes,
             availableStreamIDs,
+            availablePlatforms,
             maxIndex,
             timestampDatabaseMin,
             timestampDatabaseMax,

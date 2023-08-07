@@ -116,6 +116,7 @@ export default function NavTable(): React.ReactElement {
                 <div className="table-auto">
                     <div className="table-header-group">
                         <div className="table-row text-center">
+                            <div className="table-cell px-4 py-2">Platform</div>
                             <div className="table-cell px-4 py-2">Action Type</div>
                             <div className="table-cell px-4 py-2">Date Time (UTC)</div>
                             <div className="table-cell px-4 py-2">Timestamp</div>
@@ -134,16 +135,20 @@ export default function NavTable(): React.ReactElement {
                             const actionType = doc['action_type']
                             const ufmLabel = doc['ufm_label']
                             const streamId = doc['stream_id']
+                            const platform = doc['platform']
                             const timestampCoarse = doc['timestamp_coarse']
                             const [date, time] = timestampToIsoString(timestamp).split('T')
-                            const linkString: string = '/data_view/' + ufmLabel + '/' + timestamp.toString() + '/' + actionType
+                            const linkString: string = '/data_view/' + platform + '/' + streamId + '/' + timestamp.toString() + '/' + actionType
                             return (
                                 <Link
                                     className="table-row hover:bg-tvpurple hover:text-tvblue"
-                                    key={timestamp.toString() + actionType + ufmLabel + timestampCoarse.toString()}
+                                    key={timestamp.toString() + platform + actionType + streamId + timestampCoarse.toString()}
                                     href={linkString}
                                     prefetch={false}
                                 >
+                                    <div className="table-cell border px-4 py-2">
+                                        {platform}
+                                    </div>
                                     <div className="table-cell border px-4 py-2">
                                         {actionType}
                                     </div>

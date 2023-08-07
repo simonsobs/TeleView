@@ -1,8 +1,9 @@
 import os
 from time import time
-from typing import List, Dict, Tuple, NamedTuple, Optional, Union
+from itertools import chain
+from typing import List, Dict, Tuple, NamedTuple, Optional, Union, Iterable
 
-from api.mongo.configs import SMURF_DATA_DIR
+from api.mongo.configs import PLATFORMS_DATA_DIR
 from api.mongo.configs import USE_RELATIVE_PATH, EXPECTED_OUTPUT_DIR_NAMES, SEND_PROCESS_STATUS, \
     EXTRA_TIME_SECONDS_FOR_COARSE_TIME
 
@@ -68,6 +69,7 @@ class SmurfDataLocation(NamedTuple):
     path: str
     ufm_label: str
     stream_id: str
+    platform: str
     outputs: Optional[List[str]] = None
     plots: Optional[List[str]] = None
 
@@ -85,7 +87,7 @@ def data_scraper(func):
 
 
 @data_scraper
-def smurf(timestamp_min: int, timestamp_max: int, smurf_data_path: str, verbose: bool = False):
+def smurf(timestamp_min: int, timestamp_max: int, smurf_data_path: str, platform: str, verbose: bool = False):
     if verbose:
         print(f"  Scrapping smurf data from {smurf_data_path}")
     for coarse_time_int in get_time_dirs(parent_dir=smurf_data_path):
@@ -131,52 +133,64 @@ def smurf(timestamp_min: int, timestamp_max: int, smurf_data_path: str, verbose:
                     path=path_formatted,
                     ufm_label=f"{ufm_letter.upper()}v{ufm_number}",
                     stream_id=stream_id,
+                    platform=platform,
                     outputs=data_files_by_type['outputs'],
                     plots=data_files_by_type['plots'],
                 )
 
 
-def find_data(timestamp_min: int, timestamp_max: int,
-              level3_data_dir: str, verbose: bool = False, generator_mode: bool = True) -> Dict[str, List[str]]:
-    data_locations_single_dir = {}
-    for possible_dir in os.listdir(level3_data_dir):
+def dispatch_scrapper(timestamp_min: int, timestamp_max: int,
+                      platform_dir: str, verbose: bool = False, generator_mode: bool = True
+                      ) -> Dict[str, Iterable[SmurfDataLocation]]:
+    platform_name = os.path.basename(platform_dir)
+    data_generators = {}
+    for possible_dir in os.listdir(platform_dir):
         # only parse directories that are in the data_scraper_functions dictionary
-        dir_str = possible_dir.lower()
-        full_dir_path = os.path.join(level3_data_dir, possible_dir)
-        if os.path.isdir(full_dir_path) and dir_str in data_scraper_functions.keys():
+        data_type = possible_dir.lower()
+        full_dir_path = os.path.join(platform_dir, possible_dir)
+        if os.path.isdir(full_dir_path) and data_type in data_scraper_functions.keys():
+
             if generator_mode:
-                data_locations_this_dir = data_scraper_functions[dir_str](timestamp_min, timestamp_max,
-                                                                          full_dir_path, verbose=verbose)
+                data_generators[data_type] = data_scraper_functions[data_type](timestamp_min, timestamp_max,
+                                                                               full_dir_path,
+                                                                               platform=platform_name,
+                                                                               verbose=verbose)
             else:
-                data_locations_this_dir = list(data_scraper_functions[dir_str](timestamp_min, timestamp_max,
-                                                                               full_dir_path, verbose=verbose))
-            if dir_str in data_locations_single_dir.keys():
-                data_locations_single_dir[dir_str].extend(data_locations_this_dir)
-            else:
-                data_locations_single_dir[dir_str] = data_locations_this_dir
-    return data_locations_single_dir
+                data_generators[data_type] = list(data_scraper_functions[data_type](timestamp_min, timestamp_max,
+                                                                                    full_dir_path,
+                                                                                    platform=platform_name,
+                                                                                    verbose=verbose))
+    return data_generators
 
 
 def find_all_data(verbose: bool = False, generator_mode: bool = True,
                   timestamp_min: Optional[int] = None, timestamp_max: Optional[int] = None,
-                  ) -> Dict[str, List[SmurfDataLocation]]:
-    data_locations_all = {}
+                  ) -> Dict[str, Iterable[SmurfDataLocation]]:
+    data_locations_by_data_type = {}
     if timestamp_min is None:
         timestamp_min = 0
     if timestamp_max is None:
         timestamp_max = int(time()) + 1
-    if SMURF_DATA_DIR is not None:
-        level3_data_dir = os.path.dirname(SMURF_DATA_DIR)
-        data_locations_single_dir = find_data(timestamp_min=timestamp_min, timestamp_max=timestamp_max,
-                                              level3_data_dir=level3_data_dir, verbose=verbose,
-                                              generator_mode=generator_mode)
-        for dir_str, data_locations_this_dir in data_locations_single_dir.items():
-            if dir_str in data_locations_all.keys():
-                data_locations_all[dir_str].extend(data_locations_this_dir)
+    data_generators_by_type = {}
+    for platform_dir in os.listdir(PLATFORMS_DATA_DIR):
+        full_path_platform_dir = os.path.join(PLATFORMS_DATA_DIR, platform_dir)
+        if not os.path.isdir(full_path_platform_dir):
+            continue
+        if verbose:
+            print(f"Collecting data generators for Platform: {platform_dir}")
+        data_generators_this_platform = dispatch_scrapper(timestamp_min=timestamp_min, timestamp_max=timestamp_max,
+                                                          platform_dir=full_path_platform_dir, verbose=verbose,
+                                                          generator_mode=generator_mode)
+        for data_type, single_data_gen in data_generators_this_platform.items():
+            if data_type in data_generators_by_type.keys():
+                data_generators_by_type[data_type].append(single_data_gen)
             else:
-                data_locations_all[dir_str] = data_locations_this_dir
-    return data_locations_all
+                data_generators_by_type[data_type] = [single_data_gen]
+    data_locations_by_type = {}
+    for data_type in data_generators_by_type.keys():
+        data_locations_by_type[data_type] = chain(*data_generators_by_type[data_type])
+    return data_locations_by_type
 
 
 if __name__ == '__main__':
-    data_locations_all_test = find_all_data(verbose=True, generator_mode=False)
+    data_locations_all_test = find_all_data(verbose=True, generator_mode=True)

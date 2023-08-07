@@ -1,9 +1,12 @@
 import React, {useContext} from "react";
+
+import {QueryContext} from "@/states/query";
+import SelectTimeRange from "@/utils/time/select";
 import Drawer, {ClickBarrier} from "@/components/menu/drawer";
 import RemoveFilterMenu from "@/components/MenuLinks/remove_filter";
 import MatchFilterMenu from "@/components/MenuLinks/match_filter";
-import SelectTimeRange from "@/utils/time/select";
-import {QueryContext} from "@/states/query";
+
+
 
 export default function  MenuViewer (): React.ReactElement {
     const {
@@ -11,6 +14,7 @@ export default function  MenuViewer (): React.ReactElement {
         filterState,
         availableActionTypes,
         availableStreamIDs,
+        availablePlatforms,
         timestampDatabaseMin,
         timestampDatabaseMax,
         selectedTimestampMin,
@@ -46,7 +50,7 @@ export default function  MenuViewer (): React.ReactElement {
                         <Drawer
                             closeCallback={closeAllMenus}
                             title={"Match Filters Menu"}>
-                            {MatchFilterMenu({availableActionTypes, availableStreamIDs, modifierState, filterState})}
+                            {MatchFilterMenu({availableActionTypes, availableStreamIDs, availablePlatforms, modifierState, filterState})}
                         </Drawer>
                     </div>
                 </>
