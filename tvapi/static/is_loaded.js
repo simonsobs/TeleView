@@ -23,6 +23,12 @@ function checkLoaded() {
             const isCompleteArray = response.map((singleStatus) => {
                 return singleStatus['is_complete'];
             });
+            const timestampArray = response.map((singleStatus) => {
+                const [timestampUTC] = singleStatus['timestamp'].toString().split(".", 1)
+                const [dateString, timeString] = timestampUTC.split('T', 2)
+                return dateString + " " + timeString + " UTC"
+
+            })
             if (isCompleteArray.every((isComplete) => isComplete === true)) {
                 if (spinnerBox) {
                     spinnerBox.innerHTML = "All processes complete";
@@ -33,7 +39,7 @@ function checkLoaded() {
             if (statusBox) {
                 let updateString = '';
                 for (let i=0; i < response.length; i++ ) {
-                    updateString += `<div>${statuses[i]} is ${percentCompletes[i]}% complete</div>`;
+                    updateString += `<div>${statuses[i]} is ${percentCompletes[i]}% complete at ${timestampArray[i]}</div>`;
                 }
                 statusBox.innerHTML = updateString;
             }
