@@ -7,6 +7,8 @@ import numpy as np
 
 
 allowed_status_types = {'scan_smurf', 'test'}
+allowed_event_types = {'full_reset', 'test'}
+full_reset_types = {'scan_smurf'}
 
 
 def post_status(status_type: str, is_complete: bool = False, percent_complete: Optional[float] = None,

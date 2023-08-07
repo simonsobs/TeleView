@@ -141,6 +141,7 @@ export function parseFilterURL(filterURL: Array<string> | undefined, verbose: bo
         ufm_letter: undefined,
         ufm_number: undefined,
         stream_id: undefined,
+        platform: undefined,
         timestamp_range: undefined,
     }
     if (paramsStrings.length > 1) {
@@ -165,6 +166,9 @@ export function parseFilterURL(filterURL: Array<string> | undefined, verbose: bo
                     break;
                 case "stream_id":
                     filterState.stream_id = parseSingleModifierString(modifierValuesString)
+                    break;
+                case "platform":
+                    filterState.platform = parseSingleModifierString(modifierValuesString)
                     break;
                 case "timestamp_range":
                     filterState.timestamp_range = simplifyRanges(parseModifierRanges(modifierValuesString))
@@ -254,6 +258,9 @@ function encodeToURLFilter(filterState: FilterState, primaryOperator: string = "
                 break;
             case "stream_id":
                 stateURL += encodeToURFilterKeyValue(key, filterState.stream_id, primaryOperator, secondaryOperator)
+                break;
+            case "platform":
+                stateURL += encodeToURFilterKeyValue(key, filterState.platform, primaryOperator, secondaryOperator)
                 break;
             case "timestamp_range":
                 let simplifiedTimeStampRange: Array<[number, number]> | undefined = undefined
@@ -369,6 +376,9 @@ function addSubtractFilter(filterState: FilterState, filterKey: string, filterVa
         case "stream_id":
             if (typeof filterValue === "string") newFilterState.stream_id = addSubtractFilterString(filterValue, filterState.stream_id, add)
             break;
+        case "platform":
+            if (typeof filterValue === "string") newFilterState.platform = addSubtractFilterString(filterValue, filterState.platform, add)
+            break;
         case "timestamp_range":
             if (typeof filterValue === "object") newFilterState.timestamp_range = addSubtractFilterRange(filterValue, filterState.timestamp_range, add)
             break;
@@ -457,7 +467,9 @@ export default function filterUpdateLink(
 
     const uri = filterUpdateURI(modifierState, filterState, filterKey, filterValue, toAdd)
     return (
-        <Link href={uri}
+        <Link
+            className="flex flex-1"
+            href={uri}
             rel="noopener noreferrer"
             key={"Filter_database_" + uri}
             prefetch={false}
@@ -507,6 +519,12 @@ export function filterIteratorMap(filterState: FilterState): FilterIteratorMapIn
                 if (filterState.stream_id !== undefined) {
                     filterValues = Array.from(filterState.stream_id)
                     console.log("FilterIteratorMap: stream_id: ", filterValues)
+                }
+                break
+            case "platform":
+                if (filterState.platform !== undefined) {
+                    filterValues = Array.from(filterState.platform)
+                    console.log("FilterIteratorMap: platform: ", filterValues)
                 }
                 break
             case "timestamp_range":

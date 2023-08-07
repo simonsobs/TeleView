@@ -8,6 +8,7 @@ import filterUpdateLink, {ModifierState} from "@/utils/url/filter";
 type MatchFilterMenuInput = {
     availableActionTypes:  Array<string>
     availableStreamIDs: Array<string>,
+    availablePlatforms: Array<string>,
     modifierState: ModifierState,
     filterState: FilterState
 }
@@ -34,6 +35,7 @@ function matchLinkWrapper(filterLinks: Array<React.ReactElement>): React.ReactEl
 export default function MatchFilterMenu({
                                             availableActionTypes,
                                             availableStreamIDs,
+                                            availablePlatforms,
                                             modifierState,
                                             filterState
                                         }: MatchFilterMenuInput) : React.ReactElement {
@@ -42,6 +44,9 @@ export default function MatchFilterMenu({
     })
     const streamIDFilterLinks = availableStreamIDs.map((streamID: string) => {
         return filterUpdateLink(modifierState, filterState, 'stream_id', streamID, true)
+    })
+    const platformsFilterLinks = availablePlatforms.map((platform: string) => {
+        return filterUpdateLink(modifierState, filterState, 'platform', platform, true)
     })
     return (
         <div className="flex flex-col">
@@ -53,6 +58,10 @@ export default function MatchFilterMenu({
                 {'Stream ID'}
             </div>
             {matchLinkWrapper(streamIDFilterLinks)}
+            <div className="text-2xl text-tvgrey mt-4">
+                {'Platform (Telescope)'}
+            </div>
+            {matchLinkWrapper(platformsFilterLinks)}
         </div>
     )
 }

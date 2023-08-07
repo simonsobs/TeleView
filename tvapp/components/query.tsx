@@ -37,6 +37,7 @@ type QueryClientInput = {
     docArray: Array<mongo.Document>
     availableActionTypes: Array<string>
     availableStreamIDs: Array<string>
+    availablePlatforms: Array<string>
     maxIndex: number
     timestampDatabaseMin: number
     timestampDatabaseMax: number
@@ -52,6 +53,7 @@ export default function QueryPage(
         docArray,
         availableActionTypes,
         availableStreamIDs,
+        availablePlatforms,
         maxIndex,
         timestampDatabaseMin,
         timestampDatabaseMax
@@ -64,6 +66,7 @@ export default function QueryPage(
             docArray={docArray}
             availableActionTypes={availableActionTypes}
             availableStreamIDs={availableStreamIDs}
+            availablePlatforms={availablePlatforms}
             maxIndex={maxIndex}
             timestampDatabaseMin={timestampDatabaseMin}
             timestampDatabaseMax={timestampDatabaseMax}

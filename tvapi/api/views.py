@@ -5,8 +5,8 @@ from django.shortcuts import redirect
 from django.views.generic import TemplateView
 
 from .models import StatusModel
-from .survey.database import do_scan_smurf
-from .survey.post_status import allowed_status_types, post_status_test
+from .survey.database import do_full_reset
+from .survey.post_status import allowed_status_types, post_status_test, full_reset_types
 
 
 class HomeView(TemplateView):
@@ -28,25 +28,29 @@ def test_status(request):
     return JsonResponse({'message': 'started test sequence'}, status=200)
 
 
-def scan_smurf_view(request):
-    post_type = 'scan_smurf'
+def full_reset_view(request):
+    post_type = 'full_reset'
     percent_complete = 0.0
     is_ready = True
     for single_status in list(StatusModel.objects.values()):
-        if single_status['status_type'] == post_type and single_status['percent_complete'] < 100.0:
+        # check if any of the statuses are in progress
+        if single_status['percent_complete'] < 100.0:
             is_ready = False
             percent_complete = single_status['percent_complete']
             break
     if is_ready:
         # post the parsed status to the database
-        StatusModel.objects.update_or_create(status_type=post_type, defaults={'percent_complete': percent_complete,
-                                                                              'is_complete': False})
-        request_string = request.path.split('teleview/api/scan_smurf/', 1)[1].lower()
-        thread = threading.Thread(target=do_scan_smurf, args=(None, None))
+        for status_type in sorted(full_reset_types):
+            StatusModel.objects.update_or_create(status_type=status_type, defaults={
+                'percent_complete': percent_complete,
+                'is_complete': False
+            })
+        request_string = request.path.split(f'teleview/api/{post_type}/', 1)[1].lower()
+        thread = threading.Thread(target=do_full_reset, args=(None, None))
         thread.start()
         return redirect('/teleview/api/')
     else:
-        return JsonResponse({'message': f'Cannot restart, scan_smurf in progress and is {percent_complete}% complete.'}, status=400)
+        return JsonResponse({'message': f'Cannot restart, {post_type} in progress and is {percent_complete}% complete.'}, status=400)
 
 
 def post_status_view(request):
