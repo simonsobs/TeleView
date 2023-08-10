@@ -8,13 +8,10 @@
 {% block content_schedular %}
 <div class="text-center mt-3">
     <h3>Running Database Action Status</h3>
-    <div> <strong>{{running.status}}</strong></div>
+    <h4> <strong>{{running.status}}</strong></h4>
     <div>status set by "<strong>{{running.task}}</strong>" task at <strong>{{running.timestamp}}</strong></div>
-    <h3>Scheduler Status</h3>
-    <div> <strong>{{scheduler.status}}</strong></div>
-    <div>status set by "<strong>{{scheduler.task}}</strong>" task at <strong>{{scheduler.timestamp}}</strong></div>
 
-    <h3>Database Action Queue</h3>
+    <h3 class="mt-5">Scheduler Queue for Database Actions</h3>
     {% if queue %}
         <div>
             {% for task, timestamp in queue.items %}
@@ -22,13 +19,13 @@
             {% endfor %}
         </div>
     {% else %}
-        <strong>The Database Action Queue is currently empty.</strong>
+        The Scheduler <strong> Queue </strong> for Database Actions is currently  <strong> empty </strong> .
     {% endif %}
 </div>
 {% endblock %}
 
 {% block title_statuses %}
-<h1 class="text-center mt-3">Status of Database Scans</h1>
+<h1 class="text-center mt-5">Status of Database Scans</h1>
 {% endblock %}
 
 {% block content_statuses %}
@@ -40,3 +37,4 @@
 <div id="status-box" class="text-center mt-3">
 </div>
 {% endblock %}
+`

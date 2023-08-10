@@ -5,6 +5,7 @@ from django.shortcuts import redirect
 from django.views.generic import TemplateView
 
 from .models import StatusModel
+from tvapi.settings import DEBUG
 from .survey.database import do_full_reset
 from .scheduler.event_loop import increment_event_loop, threaded_one_minute_loop
 from .survey.post_status import allowed_status_types, post_status_test, full_reset_types
@@ -19,7 +20,7 @@ class HomeView(TemplateView):
         context['queue'] = get_query_with_timestamps()
         schedule_vars = get_schedule_vars()
         context['running'] = schedule_vars['running']
-        context['scheduler'] = schedule_vars['scheduler']
+        context['DEBUG'] = DEBUG
         return self.render_to_response(context)
 
 
@@ -90,12 +91,8 @@ def set_running_as_ready(request):
     return set_schedule_var(var_name='running', status="ready", task='user_override')
 
 
-def set_scheduler_ready_view(request):
-    return set_schedule_var(var_name='scheduler', status="ready", task='user_override')
-
-
-def set_scheduler_off_view(request):
-    return set_schedule_var(var_name='scheduler', status="off", task='user_override')
+def set_running_off_view(request):
+    return set_schedule_var(var_name='running', status="off", task='user_override')
 
 
 def delete_queue_view(request):

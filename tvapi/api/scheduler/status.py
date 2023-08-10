@@ -8,9 +8,9 @@ from api.models import SchedulerState, SchedulerQueue
 from api.survey.post_status import allowed_task_operators, allowed_task_types
 
 
-allowed_schedule_var = {'running', 'scheduler'}
-allowed_running_statuses = {'ready', 'in_progress', 'complete'}
-allowed_schedule_statuses = {'ready', 'lock', 'off'}
+allowed_schedule_var = {'running'}
+allowed_running_statuses = {'off', 'in_progress', 'ready', 'complete', 'failed'}
+queue_advances_statues = {'ready', 'complete'}
 
 
 def teleview_iso_time(datetime_obj: datetime) -> str:
@@ -22,10 +22,6 @@ def set_schedule_var(var_name: str = 'schedule', status: str = 'off', task: str 
     if var_name == 'running':
         if status not in allowed_running_statuses:
             raise ValueError(f'invalid status ({status}), allowed types: {allowed_running_statuses}')
-    elif var_name == 'scheduler':
-        if status not in allowed_schedule_statuses:
-            raise ValueError(f'invalid status ({status}), allowed types: {allowed_schedule_statuses}')
-
     else:
         raise ValueError(f'invalid var_name ({var_name}), allowed types: {allowed_schedule_var}')
     if task not in allowed_task_operators:
@@ -43,9 +39,6 @@ def get_schedule_vars() -> Dict[str, any]:
                                          'timestamp': teleview_iso_time(event.timestamp)}
     if 'running' not in schedule_vars:
         SchedulerState.objects.update_or_create(var_name='running', defaults={'status': 'ready', 'task': 'init'})
-        schedule_vars = get_schedule_vars()
-    if 'scheduler' not in schedule_vars:
-        SchedulerState.objects.update_or_create(var_name='scheduler', defaults={'status': 'ready', 'task': 'init'})
         schedule_vars = get_schedule_vars()
     return schedule_vars
 
@@ -84,7 +77,6 @@ def increment_queue() -> Union[str, None]:
         # update the database
         SchedulerQueue.objects.filter(task=task).delete()
         set_schedule_var(var_name='running', status='in_progress', task=task)
-        set_schedule_var(var_name='scheduler', status='lock', task=task)
     return task
 
 
