@@ -7,7 +7,8 @@ import numpy as np
 
 
 allowed_status_types = {'scan_smurf', 'test'}
-allowed_event_types = {'full_reset', 'test'}
+allowed_task_types = {'full_reset', 'test'}
+allowed_task_operators = {'user_override', 'init', 'event_loop'} | allowed_task_types
 full_reset_types = {'scan_smurf'}
 
 

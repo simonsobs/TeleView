@@ -26,17 +26,37 @@
             <div class="jumbotron">
                 <h1>Links to Trigger Database Scans</h1>
                 <ul>
-                    <li><a href="{% url 'full-reset-view' %}">Full Database Reset</a></li>
+                    <li><a href="{% url 'full-reset-view' %}">Full Database Reset (Works, but soon to be deprecated)</a></li>
+                    <li><a href="{% url 'queue-full-reset-view' %}">add Full Database Reset (task: "full_reset") to Schedular Queue</a></li>
+                    <li><a href="{% url 'queue-test-view' %}">add Test database action (task: "test") to Schedular Queue </a></li>
                 </ul>
+                <h1>Links to Set Database States</h1>
+                <ul>
+                    <li><a href="{% url 'increment-event-loop-view' %}">increment the Schedular Event Loop </a></li>
+                    <li><a href="{% url 'run-event-loop_one-minute-view' %}">Run the scheduler event-loop for a 1-minute test </a></li>
+                    <li><a href="{% url 'set-running-ready-view' %}">set Running Database Action Status to "ready" </a></li>
+                    <li><a href="{% url 'set-scheduler-ready-view' %}">set Schedule Status to "ready" </a></li>
+                    <li><a href="{% url 'set-scheduler-off-view' %}">set Schedule Status to "off" </a></li>
+                    <li><a href="{% url 'delete-queue-view' %}">Delete all items from the current queue, currently running actions are not affected</a></li>
+                </ul>
+
             </div>
         </div>
         <div class="container">
-            {% block title %}
-            {% endblock title %}
+            {% block title_schedular %}
+            {% endblock title_schedular %}
         </div>
         <div class="container">
-            {% block content %}
-            {% endblock content %}
+            {% block content_schedular %}
+            {% endblock content_schedular %}
+        </div>
+        <div class="container">
+            {% block title_statuses %}
+            {% endblock title_statuses %}
+        </div>
+        <div class="container">
+            {% block content_statuses %}
+            {% endblock content_statuses %}
         </div>
         {% block javascript %}
         {% endblock javascript %}

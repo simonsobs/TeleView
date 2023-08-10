@@ -3,11 +3,9 @@ from time import time
 from itertools import chain
 from typing import List, Dict, Tuple, NamedTuple, Optional, Union, Iterable
 
-from api.mongo.configs import PLATFORMS_DATA_DIR
-from api.mongo.configs import USE_RELATIVE_PATH, EXPECTED_OUTPUT_DIR_NAMES, SEND_PROCESS_STATUS, \
-    EXTRA_TIME_SECONDS_FOR_COARSE_TIME
-
 from api.survey.logging import log_excluded_dir
+from api.mongo.configs import PLATFORMS_DATA_DIR
+from api.mongo.configs import USE_RELATIVE_PATH, EXPECTED_OUTPUT_DIR_NAMES, EXTRA_TIME_SECONDS_FOR_COARSE_TIME
 
 
 all_found_action_types = set()
@@ -166,7 +164,6 @@ def dispatch_scrapper(timestamp_min: int, timestamp_max: int,
 def find_all_data(verbose: bool = False, generator_mode: bool = True,
                   timestamp_min: Optional[int] = None, timestamp_max: Optional[int] = None,
                   ) -> Dict[str, Iterable[SmurfDataLocation]]:
-    data_locations_by_data_type = {}
     if timestamp_min is None:
         timestamp_min = 0
     if timestamp_max is None:

@@ -5,9 +5,9 @@ from typing import Union, Optional
 import numpy as np
 
 from api.mongo.operate import MongoOperate
-from api.survey.post_status import post_status, allowed_event_types, allowed_status_types
-from api.mongo.configs import REPORTS_STATUS_TIMEOUT_SECONDS, REPORTS_STATUS_MINIMUM_WAIT_SECONDS, VERBOSE
+from api.survey.post_status import post_status, allowed_task_types
 from api.survey.find import find_all_data, convert_coarse_time_to_timestamp
+from api.mongo.configs import REPORTS_STATUS_TIMEOUT_SECONDS, REPORTS_STATUS_MINIMUM_WAIT_SECONDS, VERBOSE
 
 
 def get_action_data(action: str, verbose: bool = True, collection_name: str = 'all_data'):
@@ -27,8 +27,8 @@ class DatabaseEvent:
         self.verbose = verbose
         # verify the event type
         self.event_type = event_type.lower().strip()
-        if self.event_type not in allowed_event_types:
-            raise ValueError(f'invalid event_type ({self.event_type}), allowed types: {allowed_event_types}')
+        if self.event_type not in allowed_task_types:
+            raise ValueError(f'invalid event_type ({self.event_type}), allowed types: {allowed_task_types}')
         # convert min timestamp to an int
         if timestamp_min is None:
             timestamp_min = 0
