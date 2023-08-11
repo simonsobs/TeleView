@@ -1,12 +1,13 @@
 import threading
+from operator import itemgetter
 
 from django.http import JsonResponse
 from django.shortcuts import redirect
 from django.views.generic import TemplateView
 
-from .models import StatusModel
 from tvapi.settings import DEBUG
 from .survey.database import do_full_reset
+from .models import StatusModel, SchedulerState
 from .scheduler.event_loop import increment_event_loop, threaded_one_minute_loop
 from .survey.post_status import allowed_status_types, post_status_test, full_reset_types
 from .scheduler.status import set_schedule_var, add_to_queue, get_query_with_timestamps, get_schedule_vars, delete_queue
@@ -24,9 +25,29 @@ class HomeView(TemplateView):
         return self.render_to_response(context)
 
 
+def get_running_view(request):
+    schedule_vars = get_schedule_vars()
+    return JsonResponse(schedule_vars['running'], safe=False)
+
+
+def get_queue_view(request):
+    data = get_query_with_timestamps()
+    return_list = [{'task': task, 'timestamp': iso_stamp} for task, iso_stamp in data.items()]
+    return JsonResponse(return_list, safe=False)
+
+
 def get_status(request):
     data = list(StatusModel.objects.values())
-    return JsonResponse(data, safe=False)
+    completed_tasks = []
+    incomplete_tasks = []
+    for single_status in data:
+        if single_status['is_complete']:
+            completed_tasks.append(single_status)
+        else:
+            incomplete_tasks.append(single_status)
+    sorted_tasks = sorted(incomplete_tasks, key=itemgetter('percent_complete', 'timestamp'))
+    sorted_tasks.extend(sorted(completed_tasks, key=itemgetter('timestamp')))
+    return JsonResponse(sorted_tasks, safe=False)
 
 
 def test_status(request):

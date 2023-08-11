@@ -1,6 +1,9 @@
 import time
 import threading
 
+from django.db.models import F
+
+from api.models import StatusModel
 from api.survey.database import do_full_reset
 from tvapi.settings import SCHEDULER_SLEEP_TIME_SECONDS
 from api.scheduler.status import get_schedule_vars, set_schedule_var, \
@@ -16,19 +19,29 @@ def event_task(func):
     # wrap the function error handling and database status setting
     def func_start_exit():
         print(f'Starting {task_name} task.')
+        set_schedule_var(var_name='running', status='in_progress', task=task_name)
         try:
             func()
         except Exception as e:
             print(f'Exception in {task_name} task: {e}')
             set_schedule_var(var_name='running', status='failed', task=task_name)
             add_to_queue(task=task_name)
+            StatusModel.objects.filter(status_type=task_name).update(retry_count=F('retry_count') + 1,
+                                                                     percent_complete=0.0,
+                                                                     is_complete=False)
 
         else:
             print(f'Exiting {task_name} task.')
             set_schedule_var(var_name='running', status='complete', task=task_name)
+            StatusModel.objects.update_or_create(status_type=task_name,
+                                                 defaults={'percent_complete': 100.0,
+                                                           'is_complete': True})
 
     # wrap the function in a thread to be called by the event loop without blocking
     def func_thread():
+        StatusModel.objects.update_or_create(status_type=task_name,
+                                             defaults={'percent_complete': 0.0,
+                                                       'is_complete': False})
         thread = threading.Thread(target=func_start_exit)
         thread.start()
 

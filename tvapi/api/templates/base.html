@@ -17,6 +17,7 @@
 
         <!-- Page Title, shows on the browser tab -->
         <title>API</title>
+<!--        <meta http-equiv="refresh" content="10">-->
         <link rel="shortcut icon" href="{% static 'favicon-32x32.png' %}" type="image/x-icon">
     </head>
     <body>
@@ -51,8 +52,12 @@
             {% endblock title_schedular %}
         </div>
         <div class="container">
-            {% block content_schedular %}
-            {% endblock content_schedular %}
+            {% block content_running %}
+            {% endblock content_running %}
+        </div>
+        <div class="container">
+            {% block content_queue %}
+            {% endblock content_queue %}
         </div>
         <div class="container">
             {% block title_statuses %}
