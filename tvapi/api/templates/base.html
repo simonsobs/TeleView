@@ -17,6 +17,7 @@
 
         <!-- Page Title, shows on the browser tab -->
         <title>API</title>
+<!--        <meta http-equiv="refresh" content="10">-->
         <link rel="shortcut icon" href="{% static 'favicon-32x32.png' %}" type="image/x-icon">
     </head>
     <body>
@@ -24,19 +25,47 @@
         <script src="{% static 'js/bootstrap.js' %}"></script>
         <div class="container">
             <div class="jumbotron">
-                <h1>Links to Trigger Database Scans</h1>
+                <h1>Trigger Database Actions</h1>
                 <ul>
-                    <li><a href="{% url 'full-reset-view' %}">Full Database Reset</a></li>
+                    <li><a href="{% url 'queue-test-view' %}">add Test database action (task: "test") to Schedular Queue </a></li>
+                    <li><a href="{% url 'queue-full-reset-view' %}">add Full Database Reset (task: "full_reset") to Schedular Queue</a></li>
                 </ul>
+                <h1>Set Database Scheduler States</h1>
+                <ul>
+                    <li><a href="{% url 'set-running-ready-view' %}">set Running Database Action Status to "ready" Allowing the Queue to Advance</a></li>
+                    <li><a href="{% url 'set-running-off-view' %}">set Running Database Action Status to "off" Blocking the Queue from Advancing </a></li>
+                    <li><a href="{% url 'delete-queue-view' %}">Delete all items from the current queue, currently running actions are not affected</a></li>
+                </ul>
+                {% if DEBUG %}
+                <h1>Special Tools, viewable when: DEBUG == True)</h1>
+                <ul>
+                    <li><a href="{% url 'full-reset-view' %}">Full Database Reset (bypasses the scheduler)</a></li>
+                    <li><a href="{% url 'increment-event-loop-view' %}">increment the Schedular Event Loop </a></li>
+                    <li><a href="{% url 'run-event-loop_one-minute-view' %}">Run the scheduler event-loop for a 1-minute test </a></li>
+                </ul>
+                {% endif %}
+
             </div>
         </div>
         <div class="container">
-            {% block title %}
-            {% endblock title %}
+            {% block title_schedular %}
+            {% endblock title_schedular %}
         </div>
         <div class="container">
-            {% block content %}
-            {% endblock content %}
+            {% block content_running %}
+            {% endblock content_running %}
+        </div>
+        <div class="container">
+            {% block content_queue %}
+            {% endblock content_queue %}
+        </div>
+        <div class="container">
+            {% block title_statuses %}
+            {% endblock title_statuses %}
+        </div>
+        <div class="container">
+            {% block content_statuses %}
+            {% endblock content_statuses %}
         </div>
         {% block javascript %}
         {% endblock javascript %}

@@ -61,10 +61,11 @@ if ":" in stripped_host_name:
     stripped_host_name = stripped_host_name.rsplit(":", 1)[0]
 if DEBUG:
     warn(f"auto-configured hostname is: {stripped_host_name}")
-ALLOWED_HOSTS = list(set([
+ALLOWED_HOSTS = list({
     'localhost',
-    stripped_host_name
-]))
+    '127.0.0.1',
+    stripped_host_name,
+})
 if stripped_host_name == "localhost":
     CSRF_TRUSTED_ORIGINS = [f"http://{stripped_host_name}"]
 else:
@@ -174,3 +175,14 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # When set to True, if the request URL does not match any of the patterns in the URLconf, it will
 # try appending a slash to the request path and try again. If it finds a match, the function will
 APPEND_SLASH = True
+
+# # CRON JOB
+# the scheduler event loop is set to run every 3 seconds
+SCHEDULER_SLEEP_TIME_SECONDS = 3.0
+
+CRONJOBS = [
+    # call a one-minute loop every minute
+    ('* * * * *', 'api.cron.request_run_event_loop_one_minute'),
+    # same as above, but adds print-statements, warning, and errors to a log file
+    # ('* * * * *', 'api.cron.request_run_event_loop_one_minute', f'>> {BASE_DIR}/logs/cron_one_minute_loop.log 2>&1'),
+]

@@ -1,15 +1,48 @@
 {% extends 'base.html' %}
 
-{% block title %}
-<h1 class="text-center mt-3">Status of Database Scans</h1>
+
+{% block title_schedular %}
+<h1 class="text-center mt-3"> Database Actions Scheduler </h1>
 {% endblock %}
 
-{% block content %}
+{% block content_running %}
+<div id="running-box" class="text-center mt-3">
+    <h3>Running Database Action Status</h3>
+    <h4> <strong>{{running.status}}</strong></h4>
+    <div>status set by "<strong>{{running.task}}</strong>" task at <strong>{{running.timestamp}}</strong></div>
+</div>
+{% endblock content_running %}
+
+{% block content_queue %}
+<div id="queue-box" class="text-center mt-3">
+    <h3 class="mt-5">Scheduler Queue for Database Actions</h3>
+    {% if queue %}
+        <table class="table table-striped table-bordered table-hover table-sm">
+            <thead><tr><th scope="col">Task</th><th scope="col">Timestamp</th></tr></thead>
+            <tbody>
+            {% for task, timestamp in queue.items %}
+                <tr><td>{{task}}</td><td>{{timestamp}}</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <div>
+            The Scheduler <strong> Queue </strong> for Database Actions is currently  <strong> empty </strong>.
+        </div>
+    {% endif %}
+
+</div>
+{% endblock %}
+
+{% block title_statuses %}
+<h1 class="text-center mt-5">Status of Database Actions and File System Scans</h1>
+{% endblock %}
+
+{% block content_statuses %}
 <div id="spinner-box" class="text-center mt-3">
     <div class="spinner-border text-primary" role="status">
         <span class="sr-only">Loading...</span>
     </div>
 </div>
-<div id="status-box" class="text-center mt-3">
-</div>
+<div id="status-box" class="text-center mt-3"></div>
 {% endblock %}
