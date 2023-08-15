@@ -124,6 +124,10 @@ def queue_full_reset_view(request):
     return add_to_queue(task='full_reset')
 
 
+def queue_update_view(request):
+    return add_to_queue(task='update')
+
+
 def queue_test_view(request):
     return add_to_queue(task='test')
 

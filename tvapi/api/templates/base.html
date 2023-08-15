@@ -27,8 +27,9 @@
             <div class="jumbotron">
                 <h1>Trigger Database Actions</h1>
                 <ul>
-                    <li><a href="{% url 'queue-test-view' %}">add Test database action (task: "test") to Schedular Queue </a></li>
-                    <li><a href="{% url 'queue-full-reset-view' %}">add Full Database Reset (task: "full_reset") to Schedular Queue</a></li>
+                    <li><a href="{% url 'queue-test-view' %}">add Test database action (task: "test") to Schedular Queue—A test action that calls time.sleep(10).</a></li>
+                    <li><a href="{% url 'queue-full-reset-view' %}">add Full Database Reset (task: "full_reset") to Schedular Queue—This removes existing data and resets the data indexes, before uploading data from a file-system scan.</a></li>
+                    <li><a href="{% url 'queue-update-view' %}">add Update Database Event Loop (task: "update") to Schedular Queue—This updates existing data with a non-destructive process that can be used to scan for file-system changes.</a></li>
                 </ul>
                 <h1>Set Database Scheduler States</h1>
                 <ul>

@@ -66,6 +66,12 @@ class MongoOperate(MongoConnection):
         collection = self.get_collection()
         collection.create_index([(index_name, 1 if ascending else -1)], unique=unique)
 
+    def collection_compound_index(self, index_dict: Dict[str, int], unique: bool = False,
+                                  collection_name: Optional[str] = None, database_name: Optional[str] = None):
+        self.select(collection_name=collection_name, database_name=database_name)
+        collection = self.get_collection()
+        collection.create_index(list(index_dict.items()), unique=unique)
+
 
 if __name__ == '__main__':
     import pprint
