@@ -1,6 +1,8 @@
 import datetime
 from typing import Optional, Dict
 
+from pymongo import ReturnDocument
+
 from api.mongo.connect import MongoConnection
 
 
@@ -8,10 +10,10 @@ class MongoOperate(MongoConnection):
     test_database_name = 'test_db'
     test_collection_name = 'test_collection'
     test_document = {
-            "author": "Caleb Wheeler",
-            "text": "My first blog post!",
-            "tags": ["mongodb", "python", "pymongo"],
-            "date": datetime.datetime.utcnow()
+        "author": "Caleb Wheeler",
+        "text": "My first blog post!",
+        "tags": ["mongodb", "python", "pymongo"],
+        "date": datetime.datetime.utcnow()
     }
 
     def database_remove_if_exists(self, database_name: Optional[str]):
@@ -40,6 +42,18 @@ class MongoOperate(MongoConnection):
             if self.verbose:
                 print(f'Collection {self.selected_db_name}.{self.selected_collection_name} does not exist, ' +
                       'nothing to remove.')
+
+    def find_or_create(self, doc_filter: Dict[str, any], default_doc: Dict[str, any],
+                       collection_name: Optional[str] = None, database_name: Optional[str] = None) \
+            -> Dict[str, any]:
+        self.select(collection_name=collection_name, database_name=database_name)
+        collection = self.get_collection()
+        # return None if the document does not exist
+        return collection.find_one_and_update(filter=doc_filter,
+                                              update={'$setOnInsert': default_doc},
+                                              upsert=True,  # insert the document if it does not exist
+                                              return_document=ReturnDocument.AFTER,  # return the document after update
+                                              )
 
     def post(self, document, collection_name: Optional[str] = None, database_name: Optional[str] = None):
         self.select(collection_name=collection_name, database_name=database_name)
@@ -75,9 +89,9 @@ class MongoOperate(MongoConnection):
 
 if __name__ == '__main__':
     import pprint
+
     with MongoOperate(verbose=True, database_name_to_select='test_db',
                       collection_name_to_select='test_collection') as mongo:
         mongo.initialize_test_data()
         example_collection = mongo.get_collection()
         pprint.pprint(example_collection.find_one())
-

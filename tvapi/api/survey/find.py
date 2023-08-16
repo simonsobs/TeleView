@@ -93,7 +93,7 @@ def smurf(timestamp_min: int, timestamp_max: int, smurf_data_path: str, platform
         coarse_timestamp_for_compare_max = coarse_timestamp_for_compare_min + 100000 \
                                             + EXTRA_TIME_SECONDS_FOR_COARSE_TIME
         if coarse_timestamp_for_compare_min < timestamp_min or coarse_timestamp_for_compare_max > timestamp_max:
-            # the data is likely to be outside the data is outside the requested time range
+            # the data is outside the requested time range
             continue
         full_path_coarse_time_dir = os.path.join(smurf_data_path, str(coarse_time_int))
         for stream_id in get_ufm_dirs(parent_dir=full_path_coarse_time_dir):

@@ -25,11 +25,14 @@
         <script src="{% static 'js/bootstrap.js' %}"></script>
         <div class="container">
             <div class="jumbotron">
-                <h1>Trigger Database Actions</h1>
+                <h1>Add Database Actions to Scheduler Queue</h1>
                 <ul>
-                    <li><a href="{% url 'queue-test-view' %}">add Test database action (task: "test") to Schedular Queue—A test action that calls time.sleep(10).</a></li>
-                    <li><a href="{% url 'queue-full-reset-view' %}">add Full Database Reset (task: "full_reset") to Schedular Queue—This removes existing data and resets the data indexes, before uploading data from a file-system scan.</a></li>
-                    <li><a href="{% url 'queue-update-view' %}">add Update Database Event Loop (task: "update") to Schedular Queue—This updates existing data with a non-destructive process that can be used to scan for file-system changes.</a></li>
+                    <li><a href="{% url 'queue-test-view' %}">add Test Database Action (task: "test")—A test action that calls time.sleep(10).</a></li>
+                    <li><a href="{% url 'queue-full-reset-view' %}">add Full Database Reset (task: "full_reset")—This removes existing data and resets the data indexes, before uploading data from a file-system scan.</a></li>
+                    <li><a href="{% url 'queue-update-view' %}">add Update the Database (task: "update")—This updates existing data with a non-destructive process that can be used to scan for file-system changes.</a></li>
+                    <li><a href="{% url 'queue-update-recent-view' %}">add Update the Database with Recent Data (task: "update_recent")—This scans the file-system based on at least three course timestamps (300,000 seconds) prior to the current time.</a></li>
+                    <li><a href="{% url 'queue-update-from-modification-time-view' %}">add Update the Database from the File System's modification-time (task: "update_from_modification_time")—This updates the database based on when the modified-time is more recent than the most recent modified-time of the last file system scan.</a></li>
+
                 </ul>
                 <h1>Set Database Scheduler States</h1>
                 <ul>

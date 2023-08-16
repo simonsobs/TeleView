@@ -66,10 +66,12 @@ class DatabaseEvent:
         self.lowest_timestamp_coarse_found = None
 
         # finally, trigger the appropriate event
-        if self.event_type == 'full_reset':
-            self.upload_data()
-        elif self.event_type == 'update':
+        if self.event_type == 'update_from_modification_time':
+            raise NotImplementedError(f'event_type ({self.event_type}) not implemented yet')
+        elif self.event_type in {'update', 'update_recent'}:
             self.update_data()
+        elif self.event_type == 'full_reset':
+            self.upload_data()
 
     def send_status(self, status_type: str, is_complete: bool = False, timestamp_coarse: Optional[int] = None):
         if is_complete:
@@ -181,12 +183,28 @@ def do_full_reset(timestamp_min: Optional[Union[datetime, int, float, None]] = N
                   verbose=VERBOSE)
 
 
-def do_update(timestamp_min: Optional[Union[datetime, int, float, None]] = None,
-              timestamp_max: Optional[Union[datetime, int, float, None]] = None,):
+def do_update():
     DatabaseEvent(event_type='update',
-                  timestamp_min=timestamp_min,
-                  timestamp_max=timestamp_max,
+                  timestamp_min=None,
+                  timestamp_max=None,
                   verbose=VERBOSE)
+
+
+def do_update_recent():
+    now = time()
+    three_course_timestamps_in_the_past = int(now) - 300000
+    DatabaseEvent(event_type='update_recent',
+                  timestamp_min=three_course_timestamps_in_the_past,
+                  timestamp_max=None,
+                  verbose=VERBOSE)
+
+
+def do_update_from_modification_time():
+    pass
+    # DatabaseEvent(event_type='update_from_modification_time',
+    #               timestamp_min=None,
+    #               timestamp_max=None,
+    #               verbose=VERBOSE)
 
 
 if __name__ == '__main__':

@@ -128,6 +128,14 @@ def queue_update_view(request):
     return add_to_queue(task='update')
 
 
+def queue_update_recent_view(request):
+    return add_to_queue(task='update_recent')
+
+
+def queue_update_from_modification_time_view(request):
+    return add_to_queue(task='update_from_modification_time')
+
+
 def queue_test_view(request):
     return add_to_queue(task='test')
 
