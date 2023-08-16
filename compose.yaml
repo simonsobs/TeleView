@@ -15,6 +15,7 @@ services:
     ports:
       # open a port on the localhost computer for using the API outside a docker container
       - "${TELEVIEW_MONGODB_PORT}:${TELEVIEW_MONGODB_PORT}"
+    restart: always
 
   tvapp:
     build:
@@ -27,12 +28,13 @@ services:
         TELEVIEW_MONGODB_ROOT_USERNAME: "${TELEVIEW_MONGODB_ROOT_USERNAME}"
         TELEVIEW_MONGODB_ROOT_PASSWORD: "${TELEVIEW_MONGODB_ROOT_PASSWORD}"
         TELEVIEW_VERBOSE: "${TELEVIEW_VERBOSE}"
+    image: ghcr.io/simonsobs/teleview-tvapi:LATEST
     volumes:
       # the runtime varaibles that are written to the .env.production file in the init.sh script
       - "./tvapp/.env.production:/app/.env.production:ro"
     depends_on:
       - mongodb
-    image: ghcr.io/simonsobs/teleview-tvapi:LATEST
+    restart: always
 
   tvapi:
     build:
@@ -42,6 +44,7 @@ services:
         DJANGO_SUPERUSER_USERNAME: "${DJANGO_SUPERUSER_USERNAME}"
         DJANGO_SUPERUSER_PASSWORD: "${DJANGO_SUPERUSER_PASSWORD}"
         DJANGO_SUPERUSER_EMAIL: "${DJANGO_SUPERUSER_EMAIL}"
+    image: ghcr.io/simonsobs/teleview-tvapp:LATEST
     volumes:
       - "${TELEVIEW_PLATFORMS_DATA_DIR}:/platforms_data:ro"
       # django-static is written at build time by the tvapi Dockerfile
@@ -58,7 +61,8 @@ services:
       PLATFORMS_DATA_DIR: "/platforms_data"
       TELEVIEW_VERBOSE: "${TELEVIEW_VERBOSE}"
       TELEVIEW_DEBUG: "${TELEVIEW_DEBUG}"
-    image: ghcr.io/simonsobs/teleview-tvapp:LATEST
+    restart: always
+
 
   nginx:
     image: nginx:latest
@@ -71,6 +75,7 @@ services:
     depends_on:
       - tvapp
       - tvapi
+    restart: always
 
 
 volumes:
