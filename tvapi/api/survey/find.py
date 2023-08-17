@@ -43,19 +43,28 @@ def parse_action_name(action_dir: str) -> Tuple[Union[int, None], str]:
     return timestamp, action_type
 
 
-def get_results_files(parent_dir: str) -> Dict[str, List[str]]:
-    # the only expected dir inside the action dir is 'outputs'
-    found_dirs = set()
+def get_results_files(parent_dir: str = None, last_modified_min: Optional[Union[int, float, None]] = None
+                      ) -> Tuple[float, Dict[str, List[str]]]:
+    last_modified_max = 0.0
+    found_dirs_full_path = set()
     data_files_by_type = {}
     for output_dir in os.listdir(parent_dir):
         if output_dir not in EXPECTED_OUTPUT_DIR_NAMES:
             raise ValueError(f"Unexpected dir name {output_dir} inside {parent_dir}")
-        found_dirs.add(output_dir)
         full_path_output_dir = os.path.join(parent_dir, output_dir)
-        data_files_by_type[output_dir] = os.listdir(full_path_output_dir)
-    for not_found_dir in EXPECTED_OUTPUT_DIR_NAMES - found_dirs:
-        data_files_by_type[not_found_dir] = None
-    return data_files_by_type
+        found_dirs_full_path.add(full_path_output_dir)
+        last_modified_max = max(last_modified_max, os.path.getmtime(full_path_output_dir))
+    found_and_modified_dirs = set()
+    if last_modified_min is None or last_modified_min < last_modified_max:
+        # this data is newer than the requested minimum last-modified-time
+        for found_dir_full_path in found_dirs_full_path:
+            found_dir = os.path.basename(found_dir_full_path)
+            data_files_by_type[found_dir] = os.listdir(found_dir_full_path)
+            found_and_modified_dirs.add(found_dir)
+        # set nulls in the expected way
+        for not_found_dir in EXPECTED_OUTPUT_DIR_NAMES - found_and_modified_dirs:
+            data_files_by_type[not_found_dir] = None
+    return last_modified_max, data_files_by_type
 
 
 class SmurfDataLocation(NamedTuple):
@@ -68,6 +77,7 @@ class SmurfDataLocation(NamedTuple):
     ufm_label: str
     stream_id: str
     platform: str
+    scan_timestamp: float = None
     outputs: Optional[List[str]] = None
     plots: Optional[List[str]] = None
 
@@ -85,7 +95,8 @@ def data_scraper(func):
 
 
 @data_scraper
-def smurf(timestamp_min: int, timestamp_max: int, smurf_data_path: str, platform: str, verbose: bool = False):
+def smurf(timestamp_min: int, timestamp_max: int, smurf_data_path: str, platform: str,
+          last_modified_min: Optional[Union[int, float, None]] = None, verbose: bool = False):
     if verbose:
         print(f"  Scrapping smurf data from {smurf_data_path}")
     for coarse_time_int in get_time_dirs(parent_dir=smurf_data_path):
@@ -112,7 +123,12 @@ def smurf(timestamp_min: int, timestamp_max: int, smurf_data_path: str, platform
                     log_excluded_dir(dir_type='smurf', dir_path=full_path_action_dir,
                                      reason='Not able to parse timestamp, timestamp was None')
                     continue
-                data_files_by_type = get_results_files(parent_dir=full_path_action_dir)
+                scan_timestamp = time()
+                last_modified_max, data_files_by_type = get_results_files(parent_dir=full_path_action_dir)
+                if last_modified_min is not None:
+                    if last_modified_max < last_modified_min:
+                        # this data is too old and is not desired
+                        continue
                 all_found_action_types.add(action_type)
                 if USE_RELATIVE_PATH:
                     path_trimmed = full_path_action_dir.replace(smurf_data_path, 'smurf')
@@ -132,13 +148,15 @@ def smurf(timestamp_min: int, timestamp_max: int, smurf_data_path: str, platform
                     ufm_label=f"{ufm_letter.upper()}v{ufm_number}",
                     stream_id=stream_id,
                     platform=platform,
+                    scan_timestamp=scan_timestamp,
                     outputs=data_files_by_type['outputs'],
                     plots=data_files_by_type['plots'],
                 )
 
 
 def dispatch_scrapper(timestamp_min: int, timestamp_max: int,
-                      platform_dir: str, verbose: bool = False, generator_mode: bool = True
+                      platform_dir: str, verbose: bool = False,
+                      generator_mode: bool = True, last_modified_min: Optional[Union[int, float, None]] = None
                       ) -> Dict[str, Iterable[SmurfDataLocation]]:
     platform_name = os.path.basename(platform_dir)
     data_generators = {}
@@ -147,21 +165,23 @@ def dispatch_scrapper(timestamp_min: int, timestamp_max: int,
         data_type = possible_dir.lower()
         full_dir_path = os.path.join(platform_dir, possible_dir)
         if os.path.isdir(full_dir_path) and data_type in data_scraper_functions.keys():
-
             if generator_mode:
                 data_generators[data_type] = data_scraper_functions[data_type](timestamp_min, timestamp_max,
                                                                                full_dir_path,
                                                                                platform=platform_name,
+                                                                               last_modified_min=last_modified_min,
                                                                                verbose=verbose)
             else:
                 data_generators[data_type] = list(data_scraper_functions[data_type](timestamp_min, timestamp_max,
                                                                                     full_dir_path,
                                                                                     platform=platform_name,
+                                                                                    last_modified_min=last_modified_min,
                                                                                     verbose=verbose))
     return data_generators
 
 
 def find_all_data(verbose: bool = False, generator_mode: bool = True,
+                  last_modified_min: Optional[Union[int, float, None]] = None,
                   timestamp_min: Optional[int] = None, timestamp_max: Optional[int] = None,
                   ) -> Dict[str, Iterable[SmurfDataLocation]]:
     if timestamp_min is None:
@@ -177,7 +197,8 @@ def find_all_data(verbose: bool = False, generator_mode: bool = True,
             print(f"Collecting data generators for Platform: {platform_dir}")
         data_generators_this_platform = dispatch_scrapper(timestamp_min=timestamp_min, timestamp_max=timestamp_max,
                                                           platform_dir=full_path_platform_dir, verbose=verbose,
-                                                          generator_mode=generator_mode)
+                                                          generator_mode=generator_mode,
+                                                          last_modified_min=last_modified_min)
         for data_type, single_data_gen in data_generators_this_platform.items():
             if data_type in data_generators_by_type.keys():
                 data_generators_by_type[data_type].append(single_data_gen)

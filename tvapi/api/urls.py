@@ -17,6 +17,7 @@ urlpatterns = [
     re_path(r'^queue_update_from_modification_time/.*$', views.queue_update_from_modification_time_view, name='queue-update-from-modification-time-view'),
     re_path(r'^queue_test/.*$', views.queue_test_view, name='queue-test-view'),
     re_path(r'^delete_queue/.*$', views.delete_queue_view, name='delete-queue-view'),
+    re_path(r'^delete_status/.*$', views.delete_status_view, name='delete-status-view'),
     re_path(r'^increment_event_loop/.*$', views.increment_event_loop_view, name='increment-event-loop-view'),
     re_path(r'^run_event_loop_one_minute/.*$', views.run_event_loop_one_minute_view, name='run-event-loop_one-minute-view'),
     path('', views.HomeView.as_view(), name='index'),

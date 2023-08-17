@@ -27,25 +27,52 @@
             <div class="jumbotron">
                 <h1>Add Database Actions to Scheduler Queue</h1>
                 <ul>
-                    <li><a href="{% url 'queue-test-view' %}">add Test Database Action (task: "test")—A test action that calls time.sleep(10).</a></li>
-                    <li><a href="{% url 'queue-full-reset-view' %}">add Full Database Reset (task: "full_reset")—This removes existing data and resets the data indexes, before uploading data from a file-system scan.</a></li>
-                    <li><a href="{% url 'queue-update-view' %}">add Update the Database (task: "update")—This updates existing data with a non-destructive process that can be used to scan for file-system changes.</a></li>
-                    <li><a href="{% url 'queue-update-recent-view' %}">add Update the Database with Recent Data (task: "update_recent")—This scans the file-system based on at least three course timestamps (300,000 seconds) prior to the current time.</a></li>
-                    <li><a href="{% url 'queue-update-from-modification-time-view' %}">add Update the Database from the File System's modification-time (task: "update_from_modification_time")—This updates the database based on when the modified-time is more recent than the most recent modified-time of the last file system scan.</a></li>
+                    <li><a href="{% url 'queue-test-view' %}" title="test action pauses for 10 seconds (using Python's time.sleep(10)) and exits.">
+                        <strong>test</strong>—A safe test database action to demonstrate the Scheduler Queue.
+                    </a></li>
+
+                    <li><a href="{% url 'queue-full-reset-view' %}" title="full_reset first removes existing data in the database and then uploads data from a file-system scan. Use this to reset the database after changing the types of data uploaded to the database or to update the data indexing properties.">
+                        <strong>full_reset</strong>—Fully reset the database, resetting both the data and indexing.
+                    </a></li>
+
+                    <li><a href="{% url 'queue-update-view' %}" title="update the existing database using a non-destructive process. This process scans the entire file-system and updates the database maintaining previously found data such that it is still available during the update.">
+                        <strong>update</strong>—Update the database with a full file system scan.
+                    </a></li>
+                    <li><a href="{% url 'queue-update-recent-view' %}" title="update_recent is similar to 'update' but the database only updates file-system data that has timestamps within 300,000 seconds (~3.47 days) prior to time of the last database scan.">
+                        <strong>update_recent</strong>—Update the database with recent data only.
+                    </a></li>
+                    <li><a href="{% url 'queue-update-from-modification-time-view' %}" title="update_from_modification_time only considers the same window of data as 'update-recent'. This updates the database when the file-system data directories have a modification-time that is more recent than the start-time of the last file system scan. This is slower, but functionally the same as 'update' when the database has never been scanned. However, when only a small fraction of filesystem data has been recently modified, this process is much faster; unnecessary updates to the database are omitted in the upload process by modification-time filtering. This process is added to the Scheduler Queue every 5 minutes by crontab on the Production (as opposed to Development) variant of this website." >
+                        <strong>update_from_modification_time</strong>—Update the database depending on the file-system modification-time.
+                    </a></li>
 
                 </ul>
                 <h1>Set Database Scheduler States</h1>
                 <ul>
-                    <li><a href="{% url 'set-running-ready-view' %}">set Running Database Action Status to "ready" Allowing the Queue to Advance</a></li>
-                    <li><a href="{% url 'set-running-off-view' %}">set Running Database Action Status to "off" Blocking the Queue from Advancing </a></li>
-                    <li><a href="{% url 'delete-queue-view' %}">Delete all items from the current queue, currently running actions are not affected</a></li>
+                    <li><a href="{% url 'set-running-ready-view' %}">
+                        Set <strong>Running Database Action Status</strong> to "<strong>ready</strong>"—This status <b>Allows</b> the Scheduler Queue to advance.
+                    </a></li>
+                    <li><a href="{% url 'set-running-off-view' %}">
+                        Set <strong>Running Database Action Status</strong> to "<strong>off</strong>"—This status <b>Blocks</b> the Scheduler Queue from advancing.
+                    </a></li>
+                    <li><a href="{% url 'delete-queue-view' %}" title="Currently running Database Actions are not affected.">
+                        <strong>Remove</strong> all items from the <strong>Scheduler Queue for Database Actions</strong>.
+                    </a></li>
+                    <li><a href="{% url 'delete-status-view' %}" title="Use this to clear old statuses or to clear the statuses of a failed action that did not get removed automatically (a useful debugging tool).">
+                        <strong>Remove</strong> all items from the <strong>Status of Database Actions and File System Scans</strong>.
+                    </a></li>
                 </ul>
                 {% if DEBUG %}
-                <h1>Special Tools, viewable when: DEBUG == True)</h1>
+                <h1>Special Tools, viewable when: DEBUG == True</h1>
                 <ul>
-                    <li><a href="{% url 'full-reset-view' %}">Full Database Reset (bypasses the scheduler)</a></li>
-                    <li><a href="{% url 'increment-event-loop-view' %}">increment the Schedular Event Loop </a></li>
-                    <li><a href="{% url 'run-event-loop_one-minute-view' %}">Run the scheduler event-loop for a 1-minute test </a></li>
+                    <li><a href="{% url 'full-reset-view' %}" title="Displays errors in the terminal for debugging since this event is not threaded like the Scheduler Queue events.">
+                        <strong>Full Database Reset</strong>—Bypasses the Scheduler Queue.
+                    </a></li>
+                    <li><a href="{% url 'increment-event-loop-view' %}" title="Crontab increments the Scheduler Event-Loop in Production, so this tool is only useful in the Development environment. In Development, this can be used to test the Scheduler Event-Loop and slow down function calls so that they can be more easily observed and debugged.">
+                        <strong>Increment the Schedular Event-Loop</strong>—Do not use in Production.
+                    </a></li>
+                    <li><a href="{% url 'run-event-loop_one-minute-view' %}" title="In Development, this must be clicked for the Scheduler Queue to progress. In Production, crontab calls this function that runs the Scheduler Event-Loop. However, when in Development, crontabs are not active. This activates the same function that is called once-per-minute by the crontab to run the Scheduler Event-Loop.">
+                        <strong>Run the Scheduler Event-Loop for a 1-minute test</strong>—Do not use in Production.
+                    </a></li>
                 </ul>
                 {% endif %}
 

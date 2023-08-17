@@ -1,5 +1,5 @@
 import datetime
-from typing import Optional, Dict
+from typing import Optional, Dict, Union
 
 from pymongo import ReturnDocument
 
@@ -66,6 +66,29 @@ class MongoOperate(MongoConnection):
         collection = self.get_collection()
         collection.update_one(filter=doc_filter, update={"$set": update_map}, upsert=True)
 
+    def get_max_value(self, field_name: str, collection_name: Optional[str] = None,
+                      database_name: Optional[str] = None) -> Union[float, None]:
+        self.select(collection_name=collection_name, database_name=database_name)
+        collection = self.get_collection()
+        pipeline = [
+            {
+                "$group": {
+                    "_id": None,
+                    "maxQty": {"$max": f"${field_name}"}
+                },
+            },
+            {
+                "$project": {
+                    "_id": 0,
+                },
+            },
+        ]
+        return_list = list(collection.aggregate(pipeline=pipeline))
+        if len(return_list) == 0:
+            return None
+        else:
+            return return_list[0]['maxQty']
+
     def initialize_test_data(self):
         self.collection_remove_if_exists(collection_name=self.test_collection_name,
                                          database_name=self.test_database_name)
@@ -87,11 +110,22 @@ class MongoOperate(MongoConnection):
         collection.create_index(list(index_dict.items()), unique=unique)
 
 
-if __name__ == '__main__':
-    import pprint
+def get_max_timestamp() -> float:
+    max_timestamp = 0.0
+    with MongoOperate(verbose=True, database_name_to_select='files',
+                      collection_name_to_select='smurf') as mongo:
+        found_timestamp = mongo.get_max_value(field_name='timestamp')
+        if found_timestamp is not None:
+            max_timestamp = max(max_timestamp, found_timestamp)
+    return max_timestamp
 
-    with MongoOperate(verbose=True, database_name_to_select='test_db',
-                      collection_name_to_select='test_collection') as mongo:
-        mongo.initialize_test_data()
-        example_collection = mongo.get_collection()
-        pprint.pprint(example_collection.find_one())
+
+if __name__ == '__main__':
+    # import pprint
+    #
+    # with MongoOperate(verbose=True, database_name_to_select='test_db',
+    #                   collection_name_to_select='test_collection') as mongo:
+    #     mongo.initialize_test_data()
+    #     example_collection = mongo.get_collection()
+    #     pprint.pprint(example_collection.find_one())
+    test = get_max_timestamp()

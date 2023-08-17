@@ -185,8 +185,8 @@ CRONJOBS = [
     ('* * * * *', 'api.cron.request_run_event_loop_one_minute'),
     # same as above, but adds print-statements, warning, and errors to a log file
     # ('* * * * *', 'api.cron.request_run_event_loop_one_minute', f'>> {BASE_DIR}/logs/cron_one_minute_loop.log 2>&1'),
-    # call a one-day loop at 07:00 UTC
-    ('0 7 * * *', 'api.cron.request_queue_update_recent'),
-    # call a 5-minute loop to update the database from the modification time
-    # ('*/5 * * * *', 'api.cron.request_queue_update_from_modification_time'),
+    # every-day at 07:03 UTC operation to fully update the database from the recent time period.
+    ('3 7 * * *', 'api.cron.request_queue_update_recent'),
+    # every 5th minute operation to update the database from the modification time
+    ('*/5 * * * *', 'api.cron.request_queue_update_from_modification_time'),
 ]

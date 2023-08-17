@@ -7,6 +7,7 @@ import numpy as np
 from api.mongo.operate import MongoOperate
 from api.survey.post_status import post_status, allowed_task_types
 from api.survey.find import find_all_data, convert_coarse_time_to_timestamp
+from api.survey.database_states import set_min_timestamp_for_scan_smurf, get_min_timestamp_for_scan_smurf
 from api.mongo.configs import REPORTS_STATUS_TIMEOUT_SECONDS, REPORTS_STATUS_MINIMUM_WAIT_SECONDS, VERBOSE
 
 
@@ -23,8 +24,10 @@ class DatabaseEvent:
     def __init__(self, event_type: str,
                  timestamp_min: Optional[Union[datetime, int, float, None]] = None,
                  timestamp_max: Optional[Union[datetime, int, float, None]] = None,
+                 from_last_scan: bool = False,
                  verbose: bool = True):
         self.verbose = verbose
+        self.from_last_scan = from_last_scan
         # verify the event type
         self.event_type = event_type.lower().strip()
         if self.event_type not in allowed_task_types:
@@ -131,7 +134,7 @@ class DatabaseEvent:
 
     def smurf_upload(self):
         collection_name = 'smurf'
-        all_data = find_all_data(verbose=self.verbose, generator_mode=True,
+        all_data = find_all_data(verbose=self.verbose, generator_mode=True,last_modified_min=None,
                                  timestamp_min=self.timestamp_min, timestamp_max=self.timestamp_max)
         if collection_name not in all_data.keys():
             raise ValueError(f'collection_name ({collection_name}) not found in all_data.keys()')
@@ -139,14 +142,21 @@ class DatabaseEvent:
                           collection_name_to_select=collection_name) as mongo:
             status_type = f'scan_{collection_name}'
             self.send_status(status_type=status_type, is_complete=False, timestamp_coarse=None)
+            scan_timestamp_min = float('inf')
             for record in all_data[collection_name]:
+                scan_timestamp_min = min(scan_timestamp_min, record.scan_timestamp)
                 mongo.post(document=record.to_dict())
                 self.send_status(status_type=status_type, timestamp_coarse=record.timestamp_coarse)
+        set_min_timestamp_for_scan_smurf(scan_timestamp_min=scan_timestamp_min)
         self.send_status(status_type=status_type, is_complete=True)
 
     def smurf_update(self):
         collection_name = 'smurf'
-        all_data = find_all_data(verbose=self.verbose, generator_mode=True,
+        if self.from_last_scan:
+            last_modified_min = get_min_timestamp_for_scan_smurf()
+        else:
+            last_modified_min = None
+        all_data = find_all_data(verbose=self.verbose, generator_mode=True, last_modified_min=last_modified_min,
                                  timestamp_min=self.timestamp_min, timestamp_max=self.timestamp_max)
         if collection_name not in all_data.keys():
             raise ValueError(f'collection_name ({collection_name}) not found in all_data.keys()')
@@ -154,7 +164,9 @@ class DatabaseEvent:
                           collection_name_to_select=collection_name) as mongo:
             status_type = f'scan_{collection_name}'
             self.send_status(status_type=status_type, is_complete=False, timestamp_coarse=None)
+            scan_timestamp_min = float('inf')
             for record in all_data[collection_name]:
+                scan_timestamp_min = min(scan_timestamp_min, record.scan_timestamp)
                 document = record.to_dict()
                 unique_index = {
                     'platform': record.platform,
@@ -165,6 +177,7 @@ class DatabaseEvent:
                 }
                 mongo.update_or_insert_one(doc_filter=unique_index, update_map=document)
                 self.send_status(status_type=status_type, timestamp_coarse=record.timestamp_coarse)
+            set_min_timestamp_for_scan_smurf(scan_timestamp_min=scan_timestamp_min)
             self.send_status(status_type=status_type, is_complete=True)
 
     def upload_data(self):
@@ -173,6 +186,16 @@ class DatabaseEvent:
 
     def update_data(self):
         self.smurf_update()
+
+
+def get_max_timestamp() -> float:
+    max_timestamp = 0.0
+    with MongoOperate(verbose=VERBOSE, database_name_to_select='files',
+                      collection_name_to_select='smurf') as mongo:
+        found_timestamp = mongo.get_max_value(field_name='timestamp')
+        if found_timestamp is not None:
+            max_timestamp = max(max_timestamp, found_timestamp)
+    return max_timestamp
 
 
 def do_full_reset(timestamp_min: Optional[Union[datetime, int, float, None]] = None,
@@ -190,21 +213,17 @@ def do_update():
                   verbose=VERBOSE)
 
 
-def do_update_recent():
-    now = time()
-    three_course_timestamps_in_the_past = int(now) - 300000
+def do_update_recent(from_last_scan: bool = False):
+    three_course_timestamps_in_the_past = max(0, int(get_max_timestamp() - 300000))
     DatabaseEvent(event_type='update_recent',
                   timestamp_min=three_course_timestamps_in_the_past,
                   timestamp_max=None,
+                  from_last_scan=from_last_scan,
                   verbose=VERBOSE)
 
 
 def do_update_from_modification_time():
-    pass
-    # DatabaseEvent(event_type='update_from_modification_time',
-    #               timestamp_min=None,
-    #               timestamp_max=None,
-    #               verbose=VERBOSE)
+    do_update_recent(from_last_scan=True)
 
 
 if __name__ == '__main__':
