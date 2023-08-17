@@ -21,3 +21,11 @@ def make_request(request_string):
 
 def request_run_event_loop_one_minute():
     make_request('run_event_loop_one_minute/')
+
+
+def request_queue_update_recent():
+    make_request('queue_update_recent/')
+
+
+def request_queue_update_from_modification_time():
+    make_request('queue_update_from_modification_time/')

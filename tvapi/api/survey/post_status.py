@@ -6,7 +6,7 @@ import requests
 import numpy as np
 
 
-allowed_task_types = {'full_reset', 'test'}
+allowed_task_types = {'full_reset', 'test', 'update', 'update_recent', 'update_from_modification_time'}
 allowed_status_types = {'scan_smurf', 'queue'} | allowed_task_types
 allowed_task_operators = {'user_override', 'init', 'queue'} | allowed_task_types
 full_reset_types = {'scan_smurf'}

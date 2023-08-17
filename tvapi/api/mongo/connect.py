@@ -97,15 +97,17 @@ class MongoConnection:
             self.select_collection(collection_name_to_select=collection_name)
         return db[self.selected_collection_name]
 
-    def database_exists(self, database_name: Optional[str]) -> bool:
+    def database_exists(self, database_name: Optional[str] = None) -> bool:
         """Check if a database exists"""
-        self.select_database(database_name_to_select=database_name)
+        if database_name is not None:
+            self.select_database(database_name_to_select=database_name)
         return self.selected_db_name in self.client.list_database_names()
 
     def collection_exists(self, collection_name: Optional[str] = None, database_name: Optional[str] = None) -> bool:
         """Check if a collection exists"""
         db = self.get_database(database_name=database_name)
-        self.select_collection(collection_name_to_select=collection_name)
+        if collection_name is not None:
+            self.select_collection(collection_name_to_select=collection_name)
         return self.selected_collection_name in db.list_collection_names()
 
     def find_matching(self, name: str, value: Union[str, int, float, None],

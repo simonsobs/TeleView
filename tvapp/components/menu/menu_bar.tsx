@@ -1,8 +1,8 @@
 import Link from "next/link";
 import React, {Dispatch, SetStateAction, useContext} from "react";
 
-import { apiBaseURI } from "@/utils/config";
-import { QueryContext } from "@/states/query";
+import {QueryContext} from "@/states/query";
+import {apiBaseURI, env} from "@/utils/config";
 
 
 type MenuButtonInput = {
@@ -43,6 +43,19 @@ export function menuButton({isClicked, setIsClicked, buttonText, isCloseButton}:
 }
 
 
+function linkToAPI(): React.ReactNode {
+    //  Optional link to the tools that refresh the database. This link removed in production.
+    return(
+        <div>
+            <Link href={apiBaseURI}>
+                <button className="bg-tvyellow hover:bg-tvbrown text-black hover:text-white font-bold py-2 px-4 rounded">
+                    Link to Database Refresher
+                </button>
+            </Link>
+        </div>
+    )
+}
+
 export default function MenuBar(): React.ReactElement {
     const {
         isRemoveFilterMenuOpen,
@@ -65,13 +78,7 @@ export default function MenuBar(): React.ReactElement {
                 <div>
                     {menuButton({isClicked: isTimeRangeMenuOpen, setIsClicked: setIsTimeRangeMenuOpen, buttonText: "Time Range Filters", isCloseButton: false})}
                 </div>
-                <div>
-                    <Link href={apiBaseURI}>
-                        <button className="bg-tvyellow hover:bg-tvbrown text-black hover:text-white font-bold py-2 px-4 rounded">
-                            Temp Link to Database Refresher
-                        </button>
-                    </Link>
-                </div>
+                {env === "development" ? linkToAPI() : <div/>}
             </div>
         </div>
     )

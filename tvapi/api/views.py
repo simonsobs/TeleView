@@ -46,7 +46,7 @@ def get_status(request):
         else:
             incomplete_tasks.append(single_status)
     sorted_tasks = sorted(incomplete_tasks, key=itemgetter('percent_complete', 'timestamp'))
-    sorted_tasks.extend(sorted(completed_tasks, key=itemgetter('timestamp')))
+    sorted_tasks.extend(sorted(completed_tasks, key=itemgetter('timestamp'), reverse=True))
     return JsonResponse(sorted_tasks, safe=False)
 
 
@@ -120,8 +120,25 @@ def delete_queue_view(request):
     return delete_queue()
 
 
+def delete_status_view(request):
+    StatusModel.objects.all().delete()
+    return redirect('/teleview/api/')
+
+
 def queue_full_reset_view(request):
     return add_to_queue(task='full_reset')
+
+
+def queue_update_view(request):
+    return add_to_queue(task='update')
+
+
+def queue_update_recent_view(request):
+    return add_to_queue(task='update_recent')
+
+
+def queue_update_from_modification_time_view(request):
+    return add_to_queue(task='update_from_modification_time')
 
 
 def queue_test_view(request):

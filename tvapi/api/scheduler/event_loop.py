@@ -4,8 +4,8 @@ import threading
 from django.db.models import F
 
 from api.models import StatusModel
-from api.survey.database import do_full_reset
 from tvapi.settings import SCHEDULER_SLEEP_TIME_SECONDS
+from api.survey.database import do_full_reset, do_update, do_update_recent, do_update_from_modification_time
 from api.scheduler.status import get_schedule_vars, set_schedule_var, \
     add_to_queue, increment_queue, queue_advances_statues
 
@@ -58,6 +58,21 @@ def test(sleep_time: int = 10):
 @event_task
 def full_reset():
     do_full_reset()
+
+
+@event_task
+def update():
+    do_update()
+
+
+@event_task
+def update_recent():
+    do_update_recent()
+
+
+@event_task
+def update_from_modification_time():
+    do_update_from_modification_time()
 
 
 def increment_event_loop():
