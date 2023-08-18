@@ -9,6 +9,8 @@ import {ModifierState} from "@/utils/url/filter";
 import NavTable from "@/components/NavDocs/table";
 import MenuViewer from "@/components/menu/menu_view";
 import {FilterState} from "@/utils/mongo/request_data";
+import NavSmurfDocView from "@/components/DataView/client_entry";
+
 
 
 export function QueryClient(): ReactElement {
@@ -18,9 +20,12 @@ export function QueryClient(): ReactElement {
                 <div className="flex-none w-full items-center font-mono text-lg p-4">
                     <MenuBar/>
                 </div>
-                <div className="grow h-14">
-                    <div className="h-full w-full px-24">
+                <div className="grow h-14 flex flex-row">
+                    <div className="h-full w-1/2">
                         <NavTable/>
+                    </div>
+                    <div className="h-full w-1/2 overflow-auto">
+                        <NavSmurfDocView/>
                     </div>
                 </div>
             </div>

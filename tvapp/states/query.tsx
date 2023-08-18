@@ -29,6 +29,8 @@ interface AppContextInterface {
     setIsTimeRangeMenuOpen: Dispatch<SetStateAction<boolean>>;
     isAnyMenuOpen: boolean;
     closeAllMenus: () => void;
+    selectedSmurfDocIndex: null | number;
+    setSelectedSmurfDocIndex: Dispatch<SetStateAction<null | number>>;
 }
 
 
@@ -64,6 +66,8 @@ export const queryContextDefaultValue: AppContextInterface = {
     setIsTimeRangeMenuOpen: () => false,
     isAnyMenuOpen: false,
     closeAllMenus: () => {},
+    selectedSmurfDocIndex: null,
+    setSelectedSmurfDocIndex: () => false,
 }
 
 
@@ -109,7 +113,8 @@ export default function QueryProvider(
     const [isTimeRangeMenuOpen, setIsTimeRangeMenuOpen] = useState<boolean>(false);
     // summary variables for the above states
     const isAnyMenuOpen = isRemoveFilterMenuOpen || isMatchMenuOpen || isTimeRangeMenuOpen;
-
+    // Docs Viewer states
+    const [selectedSmurfDocIndex, setSelectedSmurfDocIndex] = useState<null | number>(0 < docArray.length ? 0 : null);
 
 
     const closeAllMenus = () => {
@@ -140,6 +145,7 @@ export default function QueryProvider(
             isMatchMenuOpen, setIsMatchMenuOpen,
             isTimeRangeMenuOpen, setIsTimeRangeMenuOpen,
             isAnyMenuOpen, closeAllMenus,
+            selectedSmurfDocIndex, setSelectedSmurfDocIndex,
         }}>
             {children}
         </QueryContext.Provider>);
