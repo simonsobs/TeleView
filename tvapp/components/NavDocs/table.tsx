@@ -85,7 +85,7 @@ function navTableCell(doc: { [x: string]: any; }, navHandle: AllowedNavHandle): 
 }
 
 
-function navTableRow(doc: { [x: string]: any; }, docIndex: number, navTableHandles: Array<AllowedNavHandle>): React.ReactElement {
+function NavTableRow(doc: { [x: string]: any; }, docIndex: number, navTableHandles: Array<AllowedNavHandle>): React.ReactElement {
     const {selectedSmurfDocIndex, setSelectedSmurfDocIndex} = useContext(QueryContext)
     const uniqueDocID = docToUniqueID(doc)
     const displayString = uniqueIDtoPrintString(uniqueDocID)
@@ -218,7 +218,7 @@ export default function NavTable(): React.ReactElement {
                 <div className="table-auto">
                     {navTableHeader(navTableHandlesDefault)}
                     <div className="table-row-group">
-                        {docArray.map((doc, docIndex) => navTableRow(doc, docIndex, navTableHandlesDefault))}
+                        {docArray.map((doc, docIndex) => NavTableRow(doc, docIndex, navTableHandlesDefault))}
                     </div>
                 </div>
             </div>
