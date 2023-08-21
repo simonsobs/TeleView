@@ -8,7 +8,7 @@ from api.mongo.operate import MongoOperate
 from api.survey.post_status import post_status, allowed_task_types
 from api.survey.find import find_all_data, convert_coarse_time_to_timestamp
 from api.survey.database_states import set_min_timestamp_for_scan_smurf, get_min_timestamp_for_scan_smurf
-from api.mongo.configs import REPORTS_STATUS_TIMEOUT_SECONDS, REPORTS_STATUS_MINIMUM_WAIT_SECONDS, VERBOSE
+from tvapi.settings import REPORTS_STATUS_TIMEOUT_SECONDS, REPORTS_STATUS_MINIMUM_WAIT_SECONDS, VERBOSE
 
 
 def get_action_data(action: str, verbose: bool = True, collection_name: str = 'all_data'):
