@@ -86,22 +86,30 @@ function navTableCell(doc: { [x: string]: any; }, navHandle: AllowedNavHandle): 
 
 
 function navTableRow(doc: { [x: string]: any; }, docIndex: number, navTableHandles: Array<AllowedNavHandle>): React.ReactElement {
+    const {selectedSmurfDocIndex, setSelectedSmurfDocIndex} = useContext(QueryContext)
     const uniqueDocID = docToUniqueID(doc)
-    const linkString = uniqueIDToLink(uniqueDocID)
     const displayString = uniqueIDtoPrintString(uniqueDocID)
-    console.log('docIndex', docIndex)
-    return (
-        <Link
-            className="table-row hover:bg-tvpurple hover:text-tvblue"
-            key={'navTableRow_' + displayString}
-            href={linkString}
-            prefetch={false}
-        >
-            {navTableHandles.map((navHandle) => {
-                return navTableCell(doc, navHandle)
-            })}
-        </Link>
-    )
+    if (docIndex === selectedSmurfDocIndex) {
+        return (
+            <div
+                className="table-row bg-tvyellow text-xl text-tvpurple"
+                key={'navTableRow_' + displayString}
+            >
+                {navTableHandles.map((navHandle) => navTableCell(doc, navHandle))}
+            </div>
+        )
+    } else {
+        return (
+            <div
+                className="table-row hover:bg-tvpurple hover:text-tvblue cursor-pointer"
+                key={'navTableRow_' + displayString}
+                onClick={() => {setSelectedSmurfDocIndex(docIndex)}}
+            >
+                {navTableHandles.map((navHandle) => navTableCell(doc, navHandle))}
+            </div>
+        )
+    }
+
 }
 
 

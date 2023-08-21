@@ -24,7 +24,7 @@ export function QueryClient(): ReactElement {
                     <div className="h-full w-1/2">
                         <NavTable/>
                     </div>
-                    <div className="h-full w-1/2 overflow-auto">
+                    <div className="h-full w-1/2">
                         <NavSmurfDocView/>
                     </div>
                 </div>

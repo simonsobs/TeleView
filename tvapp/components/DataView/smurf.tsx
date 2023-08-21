@@ -1,7 +1,7 @@
 import React from "react";
 import {fetchImage} from "@/components/image/get_image";
 import dataFileLink from "@/components/MenuLinks/data_files";
-import {filesBaseURI} from "@/utils/config";
+import {filesBaseURI, TELEVIEW_VERBOSE} from "@/utils/config";
 
 
 const componentOrder = [
@@ -72,11 +72,10 @@ export function uniqueIDtoPrintString(smurfDocID: UniqueSmurfDocID): string {
 
 
 export type DocViewProps = {
-    plotURLs: Array<string>,
-    dataURLs: Array<string>,
+    doc: any,
 }
 
-export function extractURLFromDoc(doc: any): [Array<string>, Array<string>] {
+function extractURLFromDoc(doc: any): [Array<string>, Array<[string, string]>] {
     // @ts-ignore
     const baseURI: string = filesBaseURI + doc['platform'] + '/' + doc['path']
     // @ts-ignore
@@ -87,21 +86,32 @@ export function extractURLFromDoc(doc: any): [Array<string>, Array<string>] {
     if (plotFiles) {
         plotURLs = plotFiles.map((file: string) => baseURI + 'plots/' + file)
     }
-    let dataURLs: Array<string> = []
+    let dataURLsAndDisplays: Array<[string, string]> = []
     if (dataFiles) {
-        dataURLs = dataFiles.map((file: string) => baseURI + 'outputs/' + file)
+        dataURLsAndDisplays = dataFiles.map((file: string) => [baseURI + 'outputs/' + file, file])
     }
-    return [plotURLs, dataURLs]
+    return [plotURLs, dataURLsAndDisplays]
 }
 
 
-export default function SmurfDocView({plotURLs, dataURLs}: DocViewProps): React.ReactElement {
-    console.log("plotURLs", plotURLs)
+export default function SmurfDocView({doc}: DocViewProps): React.ReactElement {
+    const [plotURLs, dataURLsAndDisplays] = extractURLFromDoc(doc)
+    const uniqueDocID = docToUniqueID(doc)
+    const linkString = uniqueIDToLink(uniqueDocID)
+    const displayString = uniqueIDtoPrintString(uniqueDocID)
+    if (TELEVIEW_VERBOSE) {
+        console.log("data View:", displayString)
+        console.log(doc)
+    }
+
     return (
         <div className="flex flex-col h-full w-full text-tvgry bg-tvbrown">
-            Document View for Smurf Data
+                <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-200 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
+                    SMURF Data View—{displayString}
+                </p>
+
             {plotURLs.map(plotURL => fetchImage(plotURL))}
-            {dataURLs.map(dataURL => dataFileLink(dataURL))}
+            {dataURLsAndDisplays.map(dataURLAndDisplay => dataFileLink(dataURLAndDisplay[0], dataURLAndDisplay[1]))}
         </div>
     )
 }
