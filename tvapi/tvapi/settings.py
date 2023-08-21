@@ -190,3 +190,24 @@ CRONJOBS = [
     # every 5th minute operation to update the database from the modification time
     ('*/5 * * * *', 'api.cron.request_queue_update_from_modification_time'),
 ]
+
+
+# Custom Settings, not for Django but for the teleview api
+USE_RELATIVE_PATH = True
+EXPECTED_OUTPUT_DIR_NAMES = {'outputs', 'plots'}
+
+MONGODB_HOST = os.environ.get('TELEVIEW_MONGODB_HOST', default='localhost')
+MONGODB_PORT = int(os.environ.get('TELEVIEW_MONGODB_PORT', default=27017))
+MONGODB_ROOT_USERNAME = os.environ.get('TELEVIEW_MONGODB_ROOT_USERNAME', default='user')
+MONGODB_ROOT_PASSWORD = os.environ.get('TELEVIEW_MONGODB_ROOT_PASSWORD', default='pass')
+CONNECTION_STRING_DEFAULT = f'mongodb://{MONGODB_ROOT_USERNAME}:{MONGODB_ROOT_PASSWORD}@{MONGODB_HOST}:{MONGODB_PORT}/?authMechanism=DEFAULT'
+
+test_data_location_for_default = os.path.join(teleview_dir, 'test_data')
+# get the data locations from the environment variable PLATFORMS_DATA_DIR
+PLATFORMS_DATA_DIR = os.environ.get('PLATFORMS_DATA_DIR', test_data_location_for_default)
+
+EXTRA_TIME_SECONDS_FOR_COARSE_TIME = 60 * 60 * 12  # 12 hours
+SEND_PROCESS_STATUS = True
+
+REPORTS_STATUS_TIMEOUT_SECONDS = 7  # 7 seconds
+REPORTS_STATUS_MINIMUM_WAIT_SECONDS = 5  # 5 seconds

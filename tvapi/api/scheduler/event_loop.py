@@ -1,6 +1,7 @@
 import time
 import threading
 
+from django.db import OperationalError
 from django.db.models import F
 
 from api.models import StatusModel
@@ -84,7 +85,16 @@ def increment_event_loop():
     schedule_vars = get_schedule_vars()
     running_status = schedule_vars['running']['status']
     if running_status in queue_advances_statues:
-        task = increment_queue()
+        for tries in range(20):
+            try:
+                task = increment_queue()
+                break
+            except OperationalError:
+                time.sleep(2)
+        else:
+            # this happens if the database is locked for too long, allow this tread to exit without doing anything
+            set_schedule_var(var_name='running', status='ready', task='queue')
+            task = None
         if task is not None:
             event_task_functions[task]()
 

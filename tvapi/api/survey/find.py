@@ -4,8 +4,8 @@ from itertools import chain
 from typing import List, Dict, Tuple, NamedTuple, Optional, Union, Iterable
 
 from api.survey.logging import log_excluded_dir
-from api.mongo.configs import PLATFORMS_DATA_DIR
-from api.mongo.configs import USE_RELATIVE_PATH, EXPECTED_OUTPUT_DIR_NAMES, EXTRA_TIME_SECONDS_FOR_COARSE_TIME
+from tvapi.settings import PLATFORMS_DATA_DIR, USE_RELATIVE_PATH, EXPECTED_OUTPUT_DIR_NAMES, \
+    EXTRA_TIME_SECONDS_FOR_COARSE_TIME
 
 
 all_found_action_types = set()

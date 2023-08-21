@@ -1,11 +1,11 @@
 from time import time
 
 from api.mongo.operate import MongoOperate
-from api.mongo.configs import VERBOSE
+from tvapi.settings import VERBOSE
 
 
 def log_excluded_dir(dir_type: str, dir_path: str, reason: str = None):
-    with MongoOperate(verbose = VERBOSE,
+    with MongoOperate(verbose=VERBOSE,
                       database_name_to_select='logs',
                       collection_name_to_select=f'{dir_type}_excluded_dir') as mongo:
         doc_filter = {'dir_type': dir_type, 'dir_path': dir_path, 'reason': reason}

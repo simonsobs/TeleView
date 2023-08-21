@@ -1,4 +1,3 @@
-import os
 from typing import Optional, Union, Any
 
 from pymongo import MongoClient
@@ -6,7 +5,7 @@ from pymongo.database import Database
 from pymongo.collection import Collection
 from pymongo.errors import ServerSelectionTimeoutError
 
-from api.mongo.configs import CONNECTION_STRING_DEFAULT
+from tvapi.settings import CONNECTION_STRING_DEFAULT
 
 
 class MongoConnection:
