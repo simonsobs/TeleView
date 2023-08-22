@@ -36,6 +36,8 @@ interface AppContextInterface {
     setSelectedSmurfDocIndex: Dispatch<SetStateAction<null | number>>;
     nextSmurfDoc: () => void;
     prevSmurfDoc: () => void;
+    linkCopied: boolean;
+    setLinkCopied: Dispatch<SetStateAction<boolean>>;
 }
 
 
@@ -75,6 +77,8 @@ export const queryContextDefaultValue: AppContextInterface = {
     setSelectedSmurfDocIndex: () => false,
     nextSmurfDoc: () => {},
     prevSmurfDoc: () => {},
+    linkCopied: false,
+    setLinkCopied: () => false,
 }
 
 
@@ -123,6 +127,8 @@ export default function QueryProvider(
     // Docs Viewer states
     const [selectedSmurfDocIndex, setSelectedSmurfDocIndex] = useState<null | number>(0 < docArray.length ? 0 : null);
 
+    // notifications to the user
+    const [linkCopied, setLinkCopied] = useState<boolean>(false);
 
     const closeAllMenus = () => {
         if (TELEVIEW_VERBOSE) {
@@ -196,6 +202,7 @@ export default function QueryProvider(
             isTimeRangeMenuOpen, setIsTimeRangeMenuOpen,
             isAnyMenuOpen, closeAllMenus,
             selectedSmurfDocIndex, setSelectedSmurfDocIndex, nextSmurfDoc, prevSmurfDoc,
+            linkCopied, setLinkCopied,
         }}>
             {children}
         </QueryContext.Provider>);

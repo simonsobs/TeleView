@@ -25,6 +25,7 @@ if (TELEVIEW_PUBLIC_SITE_HOST_RAW === undefined) {
     TELEVIEW_PUBLIC_SITE_HOST = TELEVIEW_PUBLIC_SITE_HOST_RAW
 }
 
+export const publicBaseURI = getBaseURL("teleview", env, IS_SERVER, TELEVIEW_PUBLIC_SITE_HOST)
 export const filesBaseURI = getBaseURL("teleview/files", env, IS_SERVER, TELEVIEW_PUBLIC_SITE_HOST)
 export const apiBaseURI = getBaseURL("teleview/api", env, IS_SERVER, TELEVIEW_PUBLIC_SITE_HOST)
 

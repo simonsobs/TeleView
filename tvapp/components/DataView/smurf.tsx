@@ -97,7 +97,6 @@ function extractURLFromDoc(doc: any): [Array<string>, Array<[string, string]>] {
 export default function SmurfDocView({doc}: DocViewProps): React.ReactElement {
     const [plotURLs, dataURLsAndDisplays] = extractURLFromDoc(doc)
     const uniqueDocID = docToUniqueID(doc)
-    const linkString = uniqueIDToLink(uniqueDocID)
     const displayString = uniqueIDtoPrintString(uniqueDocID)
     if (TELEVIEW_VERBOSE) {
         console.log("data View:", displayString)
@@ -106,9 +105,9 @@ export default function SmurfDocView({doc}: DocViewProps): React.ReactElement {
 
     return (
         <div className="flex flex-col h-full w-full text-tvgry bg-tvbrown">
-                <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-200 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
+                <div className="flex w-full p-2 border-b border-gray-200">
                     SMURF Data View—{displayString}
-                </p>
+                </div>
 
             {plotURLs.map(plotURL => fetchImage(plotURL))}
             {dataURLsAndDisplays.map(dataURLAndDisplay => dataFileLink(dataURLAndDisplay[0], dataURLAndDisplay[1]))}

@@ -6,7 +6,7 @@ import {TELEVIEW_VERBOSE} from "@/utils/config";
 import {timestampToIsoString} from "@/utils/time/time";
 import {FilterState} from "@/utils/mongo/request_data";
 import {ModifierState, genFilterURL, getCurrentIndexRange} from "@/utils/url/filter";
-import {docToUniqueID, uniqueIDToLink, uniqueIDtoPrintString} from "@/components/DataView/smurf";
+import {docToUniqueID, uniqueIDtoPrintString} from "@/components/DataView/smurf";
 
 
 const documentNavCellCSS = "px-4 border border-tvorange text-center overflow-hidden"
@@ -214,7 +214,7 @@ export default function NavTable(): React.ReactElement {
             <div className=" h-min text-tvgry bg-tvbrown">
                 {tableNavBar}
             </div>
-            <div className="flex justify-center text-tvgry border-4 bg-tvbrown border-tvgreen overflow-auto">
+            <div className="flex justify-center text-tvgry border-4 bg-tvbrown border-tvgreen overflow-y-auto">
                 <div className="table-auto">
                     {navTableHeader(navTableHandlesDefault)}
                     <div className="table-row-group">

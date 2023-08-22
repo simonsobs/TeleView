@@ -14,6 +14,7 @@ export function fetchImage(imageUrl: string): React.JSX.Element {
                     width={1200}
                     height={1200}
                     unoptimized={true}
+                    priority={true}
                 />
             </Link>
         </div>
