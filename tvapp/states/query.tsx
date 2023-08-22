@@ -1,10 +1,13 @@
-import { createContext, Dispatch, ReactNode, SetStateAction, useState } from "react";
+import {createContext, Dispatch, ReactNode, SetStateAction, useState, useEffect} from "react";
 
 import {ModifierState} from "@/utils/url/filter";
 import {streamIDToUfmNumber} from "@/utils/text_parse";
 import {FilterState} from "@/utils/mongo/request_data";
 import {TELEVIEW_DEFAULT_ITEMS_PER_PAGE, TELEVIEW_VERBOSE} from "@/utils/config";
 
+
+const nextKeys = new Set(["ArrowRight", "ArrowDown", "Enter"]);
+const prevKeys = new Set(["ArrowLeft", "ArrowUp"]);
 
 interface AppContextInterface {
     modifierState: ModifierState,
@@ -29,6 +32,12 @@ interface AppContextInterface {
     setIsTimeRangeMenuOpen: Dispatch<SetStateAction<boolean>>;
     isAnyMenuOpen: boolean;
     closeAllMenus: () => void;
+    selectedSmurfDocIndex: null | number;
+    setSelectedSmurfDocIndex: Dispatch<SetStateAction<null | number>>;
+    nextSmurfDoc: () => void;
+    prevSmurfDoc: () => void;
+    linkCopied: boolean;
+    setLinkCopied: Dispatch<SetStateAction<boolean>>;
 }
 
 
@@ -64,6 +73,12 @@ export const queryContextDefaultValue: AppContextInterface = {
     setIsTimeRangeMenuOpen: () => false,
     isAnyMenuOpen: false,
     closeAllMenus: () => {},
+    selectedSmurfDocIndex: null,
+    setSelectedSmurfDocIndex: () => false,
+    nextSmurfDoc: () => {},
+    prevSmurfDoc: () => {},
+    linkCopied: false,
+    setLinkCopied: () => false,
 }
 
 
@@ -109,8 +124,11 @@ export default function QueryProvider(
     const [isTimeRangeMenuOpen, setIsTimeRangeMenuOpen] = useState<boolean>(false);
     // summary variables for the above states
     const isAnyMenuOpen = isRemoveFilterMenuOpen || isMatchMenuOpen || isTimeRangeMenuOpen;
+    // Docs Viewer states
+    const [selectedSmurfDocIndex, setSelectedSmurfDocIndex] = useState<null | number>(0 < docArray.length ? 0 : null);
 
-
+    // notifications to the user
+    const [linkCopied, setLinkCopied] = useState<boolean>(false);
 
     const closeAllMenus = () => {
         if (TELEVIEW_VERBOSE) {
@@ -120,6 +138,49 @@ export default function QueryProvider(
         setIsMatchMenuOpen(false);
         setIsTimeRangeMenuOpen(false);
     }
+
+    const nextSmurfDoc = () => {
+        if (selectedSmurfDocIndex !== null) {
+            const nextIndex = selectedSmurfDocIndex + 1
+            if (nextIndex < docArray.length) {
+                setSelectedSmurfDocIndex(nextIndex)
+            } else {
+                setSelectedSmurfDocIndex(0)
+            }
+        }
+    }
+
+    const prevSmurfDoc = () => {
+        if (selectedSmurfDocIndex !== null) {
+            const prevIndex = selectedSmurfDocIndex - 1
+            if (prevIndex >= 0) {
+                setSelectedSmurfDocIndex(prevIndex)
+            } else {
+                setSelectedSmurfDocIndex(docArray.length - 1)
+            }
+        }
+    }
+
+    // add a keydown event listener to the document
+    useEffect(() => {
+        const keyDownHandler = (e: KeyboardEvent) => {
+            const key = e.key;
+            if (TELEVIEW_VERBOSE) {
+                console.log(`The "${key}" key is pressed.`);
+            }
+            if (nextKeys.has(key)) {
+                nextSmurfDoc()
+            } else if (prevKeys.has(key)) {
+                prevSmurfDoc()
+            }
+        }
+        document.addEventListener("keydown", keyDownHandler);
+
+        // clean up
+        return () => {
+            document.removeEventListener("keydown", keyDownHandler);
+        };
+    }, [selectedSmurfDocIndex]);
 
 
     return (
@@ -140,6 +201,8 @@ export default function QueryProvider(
             isMatchMenuOpen, setIsMatchMenuOpen,
             isTimeRangeMenuOpen, setIsTimeRangeMenuOpen,
             isAnyMenuOpen, closeAllMenus,
+            selectedSmurfDocIndex, setSelectedSmurfDocIndex, nextSmurfDoc, prevSmurfDoc,
+            linkCopied, setLinkCopied,
         }}>
             {children}
         </QueryContext.Provider>);

@@ -6,9 +6,111 @@ import {TELEVIEW_VERBOSE} from "@/utils/config";
 import {timestampToIsoString} from "@/utils/time/time";
 import {FilterState} from "@/utils/mongo/request_data";
 import {ModifierState, genFilterURL, getCurrentIndexRange} from "@/utils/url/filter";
+import {docToUniqueID, uniqueIDtoPrintString} from "@/components/DataView/smurf";
 
 
-const documentNavCellCSS = "px-4 border border-tvorange text-center"
+const documentNavCellCSS = "px-4 border border-tvorange text-center overflow-hidden"
+
+type AllowedNavHandle = 'platform' | 'action_type' | 'data_time' | 'timestamp' | 'ufm_label' | 'timestamp_coarse' | 'stream_id'
+
+
+type HandleProp = {
+    'platform': string,
+    'action_type': string,
+    'data_time': string,
+    'timestamp': string,
+    'ufm_label': string,
+    'timestamp_coarse': string,
+    'stream_id': string,
+}
+
+
+const navTableHandlesDefault: Array<AllowedNavHandle> = [
+    'platform',
+    'action_type',
+    'data_time',
+    'timestamp',
+    'ufm_label',
+    'stream_id',
+]
+
+const handleToTitle: HandleProp = {
+    'platform': 'Platform',
+    'action_type': 'Action Type',
+    'data_time': 'Date Time (UTC)',
+    'timestamp': 'Timestamp',
+    'ufm_label': 'UFM Label',
+    'timestamp_coarse': 'Timestamp Coarse',
+    'stream_id': 'Stream ID',
+}
+
+function navTableHeader(navTableHandles: Array<AllowedNavHandle>): React.ReactElement {
+    const headerCells = navTableHandles.map((handle) => {
+        return (
+            <div className="table-cell px-4 py-2" key={"NavTableHeaderCell_" +handle}>
+                {handleToTitle[handle]}
+            </div>
+        )
+    })
+    return (
+        <div className="table-header-group">
+            <div className="table-row text-center">
+                {headerCells}
+            </div>
+        </div>
+    )
+}
+
+
+function navTableCell(doc: { [x: string]: any; }, navHandle: AllowedNavHandle): React.ReactElement {
+    let cellString: string
+    switch(navHandle) {
+        case 'data_time':
+            const timestamp = doc['timestamp'];
+            const [date, time] = timestampToIsoString(timestamp).split('T');
+            cellString = date + " " + time;
+            break;
+        case 'timestamp':
+        case 'timestamp_coarse':
+            cellString = doc['timestamp'].toString();
+            break;
+        default:
+            cellString = doc[navHandle];
+    }
+    return (
+        <div className="table-cell border px-1 py-2 text-center" key={doc['_id'] + navHandle}>
+            {cellString}
+        </div>
+    )
+}
+
+
+function NavTableRow(doc: { [x: string]: any; }, docIndex: number, navTableHandles: Array<AllowedNavHandle>): React.ReactElement {
+    const {selectedSmurfDocIndex, setSelectedSmurfDocIndex} = useContext(QueryContext)
+    const uniqueDocID = docToUniqueID(doc)
+    const displayString = uniqueIDtoPrintString(uniqueDocID)
+    if (docIndex === selectedSmurfDocIndex) {
+        return (
+            <div
+                className="table-row bg-tvyellow text-xl text-tvpurple"
+                key={'navTableRow_' + displayString}
+            >
+                {navTableHandles.map((navHandle) => navTableCell(doc, navHandle))}
+            </div>
+        )
+    } else {
+        return (
+            <div
+                className="table-row hover:bg-tvpurple hover:text-tvblue cursor-pointer"
+                key={'navTableRow_' + displayString}
+                onClick={() => {setSelectedSmurfDocIndex(docIndex)}}
+            >
+                {navTableHandles.map((navHandle) => navTableCell(doc, navHandle))}
+            </div>
+        )
+    }
+
+}
 
 
 function indexElement(
@@ -112,64 +214,11 @@ export default function NavTable(): React.ReactElement {
             <div className=" h-min text-tvgry bg-tvbrown">
                 {tableNavBar}
             </div>
-            <div className="flex justify-center text-tvgry border-4 bg-tvbrown border-tvgreen overflow-auto">
+            <div className="flex justify-center text-tvgry border-4 bg-tvbrown border-tvgreen overflow-y-auto">
                 <div className="table-auto">
-                    <div className="table-header-group">
-                        <div className="table-row text-center">
-                            <div className="table-cell px-4 py-2">Platform</div>
-                            <div className="table-cell px-4 py-2">Action Type</div>
-                            <div className="table-cell px-4 py-2">Date Time (UTC)</div>
-                            <div className="table-cell px-4 py-2">Timestamp</div>
-                            <div className="table-cell px-4 py-2">UFM Label</div>
-                            <div className="table-cell px-4 py-2">Timestamp Course</div>
-                            <div className="table-cell px-4 py-2">Stream ID</div>
-                        </div>
-                    </div>
+                    {navTableHeader(navTableHandlesDefault)}
                     <div className="table-row-group">
-                        {docArray.map((doc) => {
-                            // this can be removed when 'None' type actions can be removed from the database
-                            let timestamp = doc['timestamp']
-                            if (typeof timestamp === "string" || timestamp === null || timestamp === undefined) {
-                                timestamp = 0
-                            }
-                            const actionType = doc['action_type']
-                            const ufmLabel = doc['ufm_label']
-                            const streamId = doc['stream_id']
-                            const platform = doc['platform']
-                            const timestampCoarse = doc['timestamp_coarse']
-                            const [date, time] = timestampToIsoString(timestamp).split('T')
-                            const linkString: string = '/data_view/' + platform + '/' + streamId + '/' + timestamp.toString() + '/' + actionType
-                            return (
-                                <Link
-                                    className="table-row hover:bg-tvpurple hover:text-tvblue"
-                                    key={timestamp.toString() + platform + actionType + streamId + timestampCoarse.toString()}
-                                    href={linkString}
-                                    prefetch={false}
-                                >
-                                    <div className="table-cell border px-4 py-2">
-                                        {platform}
-                                    </div>
-                                    <div className="table-cell border px-4 py-2">
-                                        {actionType}
-                                    </div>
-                                    <div className="table-cell border px-4 py-2">
-                                        {date} {time}
-                                    </div>
-                                    <div className="table-cell border px-4 py-2">
-                                        {timestamp}
-                                    </div>
-                                    <div className="table-cell border px-4 py-2">
-                                        {ufmLabel}
-                                    </div>
-                                    <div className="table-cell border px-4 py-2">
-                                        {timestampCoarse}
-                                    </div>
-                                    <div className="table-cell border px-4 py-2">
-                                        {streamId}
-                                    </div>
-                                </Link>
-                            )
-                        })}
+                        {docArray.map((doc, docIndex) => NavTableRow(doc, docIndex, navTableHandlesDefault))}
                     </div>
                 </div>
             </div>
