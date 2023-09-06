@@ -84,11 +84,13 @@ function extractURLFromDoc(doc: any): [Array<string>, Array<[string, string]>] {
     const plotFiles: Array<string> = doc['plots']
     let plotURLs: Array<string> = []
     if (plotFiles) {
-        plotURLs = plotFiles.map((file: string) => baseURI + 'plots/' + file)
+        const sortedPlotFiles = plotFiles.sort()
+        plotURLs = sortedPlotFiles.map((file: string) => baseURI + 'plots/' + file)
     }
     let dataURLsAndDisplays: Array<[string, string]> = []
     if (dataFiles) {
-        dataURLsAndDisplays = dataFiles.map((file: string) => [baseURI + 'outputs/' + file, file])
+        const sortedDataFiles = dataFiles.sort()
+        dataURLsAndDisplays = sortedDataFiles.map((file: string) => [baseURI + 'outputs/' + file, file])
     }
     return [plotURLs, dataURLsAndDisplays]
 }

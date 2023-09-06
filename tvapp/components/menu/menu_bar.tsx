@@ -70,10 +70,10 @@ export default function MenuBar(): React.ReactElement {
         <div>
             <div className="flex flex-row gap-4">
                 <div>
-                    {menuButton({isClicked: isMatchMenuOpen, setIsClicked: setIsMatchMenuOpen, buttonText: "Match Filters", isCloseButton: false})}
+                    {menuButton({isClicked: isMatchMenuOpen, setIsClicked: setIsMatchMenuOpen, buttonText: "Add Match Filters", isCloseButton: false})}
                 </div>
                 <div>
-                    {menuButton({isClicked: isTimeRangeMenuOpen, setIsClicked: setIsTimeRangeMenuOpen, buttonText: "Time Range Filters", isCloseButton: false})}
+                    {menuButton({isClicked: isTimeRangeMenuOpen, setIsClicked: setIsTimeRangeMenuOpen, buttonText: "Add Time Range Filters", isCloseButton: false})}
                 </div>
                 <div>
                     {menuButton({isClicked: isRemoveFilterMenuOpen, setIsClicked: setIsRemoveFilterMenuOpen, buttonText: "Remove Filters", isCloseButton: true})}
