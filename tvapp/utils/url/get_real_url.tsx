@@ -21,7 +21,7 @@ function getURL(path: string, isServer:boolean, publicSiteURL:string) {
 }
 
 
-export default function getBaseURL(path: string, env: string, isServer:boolean, publicSiteURL:string)
+export default function getBaseURL(path: string, env: string | undefined, isServer:boolean, publicSiteURL:string)
     : string {
     if (env === "development") {
         return joinURL("http://localhost:8111/", path) + '/'
