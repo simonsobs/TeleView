@@ -189,12 +189,12 @@ def find_all_data(verbose: bool = False, generator_mode: bool = True,
     if timestamp_max is None:
         timestamp_max = int(time()) + 1
     data_generators_by_type = {}
-    for platform_dir in os.listdir(PLATFORMS_DATA_DIR):
-        full_path_platform_dir = os.path.join(PLATFORMS_DATA_DIR, platform_dir)
+    for platform_name in os.listdir(PLATFORMS_DATA_DIR):
+        full_path_platform_dir = os.path.join(PLATFORMS_DATA_DIR, platform_name)
         if not os.path.isdir(full_path_platform_dir):
             continue
         if verbose:
-            print(f"Collecting data generators for Platform: {platform_dir}")
+            print(f"Collecting data generators for Platform: {platform_name}")
         data_generators_this_platform = dispatch_scrapper(timestamp_min=timestamp_min, timestamp_max=timestamp_max,
                                                           platform_dir=full_path_platform_dir, verbose=verbose,
                                                           generator_mode=generator_mode,
