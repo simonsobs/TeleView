@@ -5,16 +5,65 @@ provide a Graphical User Interface for viewing telescope data.
 
 ## Frameworks and Paradigms
 
-JavaScript has nothing to do with Java; it is a completely different language. JavaSript was a name chosen to 
-make a marketing connection to the popular Java language.
+### 0. JavaScript, TypeScript, React, and NEXT.js
+
+> [!NOTE] 
+> JavaScript has nothing to do with Java; it is a completely different language. JavaSript was a name chosen to 
+> make a marketing connection to the popular Java language.
+
+> [!NOTE]
+> [Trasnpiling](https://stackoverflow.com/questions/44931479/compiling-vs-transpiling) 
+> is the process of converting code from one language to another.
+
+The code that we write in the TeleView project is not what is run on the 
+client's browser. The TeleView code goes through several layers of computation.
+Webpack is used to bundle the code into a single file. Babble is used to
+convert the code into a version of JavaScript that is compatible with
+the client's browser. This is called transpiling. TypeScript is a language
+that is a superset of JavaScript. TypeScript is used to write the code
+in the TeleView project. After a type-checking phase, 
+TypeScript is transpiled into JavaScript. React is a JavaScript library,
+to write functional components in JavaScript, while still using 
+state-variables, DOM manipulation, and other class-like features of React.
+Code written in React is transpiled into JavaScript.
+NEXT.js is a React framework that allows for server-side rendering of webpages.
+
+All of this works because of extra rules that are added at each layer.
+TeleView is designed to use the strictest set of rules at each layer with
+the intention that this will make the code more reliable and easier to maintain.
+
+
 
 ### 1. Use of the `app` directory paradigm for the NEXT.js project.
 
-### 2. Use of the `TypeScript` language.
+The `app` directory router is a way of organizing the files in a project. 
+Setting up the `app` directory was the newer and recommended structure a
+NEXT.js project at in 2023. It was the hope to the author that this would
+make it easier to add new features to the project over its lifetime.
+
+Understanding that there are two paradigms for NEXT.js projects is important
+to navigating the NEXT.js docs: https://nextjs.org/docs/app. The app router
+was new enough that when this project was started, the NEXT.js book I bought,
+published in 2022, did not cover the app router. This led to a lot of
+confusion and wasted time. The `app` router replaces a and simplified a lot
+of redundant code that was required in the `pages` paradigm.
+
+Look for the blue cube in the NEXT.js docs to know if the docs are for the
+`app` router or the `pages` router. The blue cube is the logo for the `app`.
+See the image below.
+
+![NextjsDocsForApp.png](NextjsDocsForApp.png)
+
+If you know the other NEXT.js router, the `pages` directory, and want to learn 
+about the changes to the `app` paradigm, you can read about it here:
+https://blog.logrocket.com/next-js-13-app-directory/.
+
+
+### 2. React components written in the `TypeScript` language.
 
 TypeScript is a way of writing javascript that requires strict typing of variables.
-It can make a project hard to set up, but it makes adding complex features
-more reliable and easier to maintain. 
+It can make a project hard to initially set up.
+However, it makes adding complex features more reliable and easier to maintain. 
 
 React is a JavaScript library for building user interfaces.
 Developers can trigger changes to the user interface by changing 
@@ -53,8 +102,25 @@ the database. Instead, we query the database on the server, then send the
 rendered webpage and data to the client.
 
 
-
 ### 3. Configurations for `Tailwind CSS` were selected.
+
+CSS is a language for styling HTML elements. It is used to make webpages
+look nice. Tailwind CSS is a CSS framework that allows you to write CSS
+in a more efficient way. The main benefit of Tailwind CSS is that styling
+takes place in the HTML-like TSX/JSX react code. Styling is for and element
+readable in the same location as the element, not imported from a separate 
+CSS file(s). This was chosen to make it simpler to copy and paste elements
+and then modify the new element to be visually distinct.
+
+Visit to https://tailwindcss.com/ to read the pitch for Tailwind CSS.
+
+I found the docs to be really well written with everything I needed to know
+available in simple examples. See the link for the how to use 
+a **flex** CSS attribute https://tailwindcss.com/docs/flex as an example.
+Sometimes I would want a more complected example, and I would try to find
+it on Stack Overflow. However, 90% I would end up back at the 
+Tailwind CSS docs with a better understanding of what I was trying to do;
+and then be able to make a complex component from fundamental Tailwind CSS.
 
 
 ## Intentions and Scope
@@ -80,6 +146,22 @@ this environment uses the MongoDB server that is expected to be running
 in a docker container.
 
 # The Development Environment
+
+**Why use a development environment when docker runs the production environment
+so easily?** 
+
+The development environment can reload code changes very quickly, and without
+the users running any additional commands. This is very useful when developing
+something totally new to guess-and-check what is allowed and what is not.
+This is also useful when making small changes to the code, such as changing
+the color of a button.
+
+The development environment is less strict, things that would fail during
+the projection build will raise a helpful warning in the development environment.
+
+I regularly use the development environment to develop new features, and
+then I try to check and test the new code in the docker production environment
+before committing the code to the repository.
 
 ## Starting the MongoDB server
 
@@ -166,4 +248,34 @@ To learn more about Next.js, take a look at the following resources:
 - [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
 
 You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+
+
+# Migrating to the Deployment Environment
+
+Sometimes docker can fail to build the development environment after seeming
+to work fine in the development environment. If you have read this far,
+then you are probably stuck.
+
+## Run the failing docker image outside of `docker compose`
+
+Concentrate only one the failing image. In the tvapp directory run the command
+
+```docker build -t tvapp .```
+
+## Check the production environment
+
+NEXT.JS does not allow environment variables except by passing them in a
+.env files, specifically the .evn.production file for the docker build. 
+This file is not in the repository because it contains sensitive information.
+However, you can see an example of the .env.production file in the
+tvapp/.env.production.example file.
+
+This file is a subset of the .evn file in the root directly and can be made
+by running the ./init.sh script in the root directory.
+
+> [!WARNING]
+> It is known that the daq-site computer cannot create this file correctly
+> using init.sh. It adds extra return characters (`^M`) near the ends of each
+> line in the file. [Github Issue #23](https://github.com/simonsobs/TeleView/issues/23)
+
 

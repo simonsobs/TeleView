@@ -3,7 +3,7 @@ from time import time
 from itertools import chain
 from typing import List, Dict, Tuple, NamedTuple, Optional, Union, Iterable
 
-from api.survey.logging import log_excluded_dir
+from api.survey.logger import log_excluded_dir
 from tvapi.settings import PLATFORMS_DATA_DIR, USE_RELATIVE_PATH, EXPECTED_OUTPUT_DIR_NAMES, \
     EXTRA_TIME_SECONDS_FOR_COARSE_TIME
 

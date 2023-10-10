@@ -110,8 +110,13 @@ export default function SmurfDocView({doc}: DocViewProps): React.ReactElement {
                 <div className="flex w-full p-2 border-b border-gray-200">
                     SMURF Data View—{displayString}
                 </div>
-
-            {plotURLs.map(plotURL => fetchImage(plotURL))}
+            {plotURLs.map((plotURL, plotIndex) => {
+                if (plotIndex < 3) {
+                    return fetchImage(plotURL, true)
+                } else {
+                    return fetchImage(plotURL, false)
+                }
+            })}
             {dataURLsAndDisplays.map(dataURLAndDisplay => dataFileLink(dataURLAndDisplay[0], dataURLAndDisplay[1]))}
         </div>
     )
