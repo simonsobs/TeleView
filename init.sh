@@ -1,4 +1,14 @@
 #!/bin/bash
+# screen the .env file for "carriage return"
+if grep -q -r $'\r' .env; then
+    echo
+    echo "The .env file contains DOS carriage returns."
+    echo "Try cleaning it with \"sed $'s/\r//' -i .env\""
+    echo
+    echo " .tvapp/.env.production not created."
+    exit 1
+fi
+
 # read the environment variables from the .env file
 set -o allexport
 source .env
