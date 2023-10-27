@@ -20,7 +20,7 @@ def get_timestamp_max_from_now() -> int:
 
 
 def get_time_dirs(parent_dir: str) -> List[int]:
-    return [int(time_dir) for time_dir in os.listdir(parent_dir) if time_dir.isdigit()]
+    return sorted([int(time_dir) for time_dir in os.listdir(parent_dir) if time_dir.isdigit()])
 
 
 def get_ufm_dirs(parent_dir: str) -> List[str]:
@@ -103,7 +103,7 @@ def smurf(timestamp_min: int, timestamp_max: int, smurf_data_path: str, platform
         coarse_timestamp_for_compare_min = convert_coarse_time_to_timestamp(coarse_time_int)
         coarse_timestamp_for_compare_max = coarse_timestamp_for_compare_min + 100000 \
                                             + EXTRA_TIME_SECONDS_FOR_COARSE_TIME
-        if coarse_timestamp_for_compare_min < timestamp_min or coarse_timestamp_for_compare_max > timestamp_max:
+        if coarse_timestamp_for_compare_max < timestamp_min or coarse_timestamp_for_compare_min > timestamp_max:
             # the data is outside the requested time range
             continue
         full_path_coarse_time_dir = os.path.join(smurf_data_path, str(coarse_time_int))
