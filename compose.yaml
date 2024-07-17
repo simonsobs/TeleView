@@ -15,6 +15,8 @@ services:
       timeout: 10s
       retries: 5
       start_period: 40s
+      start_interval: 2s
+    init: true
 
     environment:
       # These *INITDB* variables only used when the database is first initialized
@@ -58,6 +60,7 @@ services:
         DJANGO_SUPERUSER_PASSWORD: "${DJANGO_SUPERUSER_PASSWORD}"
         DJANGO_SUPERUSER_EMAIL: "${DJANGO_SUPERUSER_EMAIL}"
     image: ghcr.io/simonsobs/teleview-tvapi:LATEST
+    init: true
     <<: *log-options
     volumes:
       - "${TELEVIEW_PLATFORMS_DATA_DIR}:/platforms_data:ro"
