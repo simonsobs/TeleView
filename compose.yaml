@@ -1,5 +1,3 @@
-version: '3.9'
-
 x-log-options:
   &log-options
   logging:
