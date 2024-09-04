@@ -1,9 +1,14 @@
-version: '3.9'
-
+x-log-options:
+  &log-options
+  logging:
+    options:
+      max-size: "10m"
+      max-file: "3"
 
 services:
   mongodb:
     image: mongodb/mongodb-community-server:6.0-ubi8
+    <<: *log-options
     healthcheck:
       test: ["CMD", "echo", "'db.runCommand(\"ping\").ok'", "|", "mongosh", "localhost:${TELEVIEW_MONGODB_PORT}/test", "--quiet"]
       interval: 10s
@@ -36,6 +41,7 @@ services:
         TELEVIEW_MONGODB_ROOT_PASSWORD: "${TELEVIEW_MONGODB_ROOT_PASSWORD}"
         TELEVIEW_VERBOSE: "${TELEVIEW_VERBOSE}"
     image: ghcr.io/simonsobs/teleview-tvapp:LATEST
+    <<: *log-options
     volumes:
       # the runtime varaibles that are written to the .env.production file in the init.sh script
       - "./tvapp/.env.production:/app/.env.production:ro"
@@ -52,6 +58,7 @@ services:
         DJANGO_SUPERUSER_PASSWORD: "${DJANGO_SUPERUSER_PASSWORD}"
         DJANGO_SUPERUSER_EMAIL: "${DJANGO_SUPERUSER_EMAIL}"
     image: ghcr.io/simonsobs/teleview-tvapi:LATEST
+    <<: *log-options
     volumes:
       - "${TELEVIEW_PLATFORMS_DATA_DIR}:/platforms_data:ro"
       # django-static is written at build time by the tvapi Dockerfile
@@ -74,6 +81,7 @@ services:
 
   nginx:
     image: nginx:latest
+    <<: *log-options
     ports:
       - "${TELEVIEW_LOCALHOST_PORT}:8080"
     volumes:
