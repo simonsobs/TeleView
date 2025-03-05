@@ -53,10 +53,15 @@ def parse_ufm_name(ufm_dir: str) -> Tuple[str, int, str]:
         return ufm_dir, 0, ufm_dir
     
     ufm_label = f'{ufm_letter.upper()}v{ufm_number}'
+
+    # Handle cases where a directory name contains non-numeric characters after the ufm
+    # number (e.g. the numeric prefix is "51" for directory "ufm_mv51r1"). If the numeric
+    # prefix is empty (i.e. the directory name has no numeric characters), set number to 0.
     number_prefix = ufm_number[:len(ufm_number)-len(ufm_number.lstrip('0123456789'))]
-    if len(number_prefix) != 0:
-        ufm_number = number_prefix
-    ufm_number = int(ufm_number)
+    if len(number_prefix) == 0:
+        ufm_number = 0
+    else:
+        ufm_number = int(number_prefix)
 
     return ufm_letter, ufm_number, ufm_label
 
