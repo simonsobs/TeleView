@@ -50,7 +50,7 @@ def parse_ufm_name(ufm_dir: str) -> Tuple[str, int, str]:
         _, dir_info = ufm_dir.split('_')
         ufm_letter, ufm_number = dir_info.split('v')
     except ValueError:
-        return ufm_dir, 0, ufm_dir
+        return '?', 0, ufm_dir
     
     ufm_label = f'{ufm_letter.upper()}v{ufm_number}'
 
