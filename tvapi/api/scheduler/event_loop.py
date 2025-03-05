@@ -1,5 +1,6 @@
 import time
 import threading
+import traceback
 
 from django.db import OperationalError
 from django.db.models import F
@@ -24,7 +25,7 @@ def event_task(func):
         try:
             func()
         except Exception as e:
-            print(f'Exception in {task_name} task: {e}')
+            print(f'Exception in {task_name} task: {e}\n{traceback.format_exc()}')
             set_schedule_var(var_name='running', status='failed', task=task_name)
             add_to_queue(task=task_name)
             StatusModel.objects.filter(status_type=task_name).update(retry_count=F('retry_count') + 1,
