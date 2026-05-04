@@ -1,6 +1,6 @@
 # # Things that can be cached
 # Base Configurations
-FROM python:3.10 AS build
+FROM python:3.13 AS build
 ENV PYTHONUNBUFFERED=1
 WORKDIR /django
 # set up the cronlog
