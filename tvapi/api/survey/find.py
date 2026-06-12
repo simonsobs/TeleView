@@ -66,8 +66,11 @@ def parse_ufm_name(ufm_dir: str) -> Tuple[str, int, str]:
     return ufm_letter, ufm_number, ufm_label
 
 
-def parse_action_name(action_dir: str) -> Tuple[Union[int, None], str]:
-    timestamp_str, action_type = action_dir.split('_', 1)
+def parse_action_name(action_dir: str) -> Tuple[Union[int, None], Union[str, None]]:
+    if '_' in action_dir:
+        timestamp_str, action_type = action_dir.split('_', 1)
+    else:
+        timestamp_str, action_type = action_dir, None
     if timestamp_str.lower().strip() == 'none':
         timestamp = None
     else:
@@ -145,15 +148,16 @@ def smurf(timestamp_min: int, timestamp_max: int, smurf_data_path: str, platform
             for action_dir in os.listdir(full_path_ufm_dir):
                 full_path_action_dir = os.path.join(full_path_ufm_dir, action_dir)
                 timestamp_int, action_type = parse_action_name(action_dir)
-                if isinstance(timestamp_int, int):
-                    if timestamp_int < timestamp_min or timestamp_int > timestamp_max:
-                        # this data is outside the requested time range
-                        continue
-                else:
-                    # this is a special case where the timestamp is None
-                    # add this file to the ignored folders database
+                if timestamp_int is None or action_type is None:
+                    # This catches dirnames of the forms
+                    # - none_{action}
+                    # - {timestamp}
+                    # Both are special cases we just want to add to ignored folders list.
                     log_excluded_dir(dir_type='smurf', dir_path=full_path_action_dir,
-                                     reason='Not able to parse timestamp, timestamp was None')
+                                     reason='Not able to parse timestamp or action_type')
+                    continue
+                if timestamp_int < timestamp_min or timestamp_int > timestamp_max:
+                    # this data is outside the requested time range
                     continue
                 scan_timestamp = time()
                 last_modified_max, data_files_by_type = get_results_files(parent_dir=full_path_action_dir)

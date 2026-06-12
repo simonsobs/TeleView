@@ -1,7 +1,7 @@
 # # Things that can be cached
 # Base Configurations
-FROM python:3.10 as build
-ENV PYTHONNUNBUFFERED 1
+FROM python:3.13 AS build
+ENV PYTHONUNBUFFERED=1
 WORKDIR /django
 # set up the cronlog
 RUN mkdir /cronlogs
@@ -26,10 +26,10 @@ COPY . .
 RUN python manage.py makemigrations
 # Initalise the database
 RUN python manage.py migrate --noinput
-# make a superuser the Django database when all these aguments are passed in
-ARG DJANGO_SUPERUSER_USERNAME=$DJANGO_SUPERUSER_USERNAME
-ARG DJANGO_SUPERUSER_PASSWORD=$DJANGO_SUPERUSER_PASSWORD
-ARG DJANGO_SUPERUSER_EMAIL=$DJANGO_SUPERUSER_EMAIL
+# make a superuser in the Django database when all these aguments are passed in
+ARG DJANGO_SUPERUSER_USERNAME=dbadmin
+ARG DJANGO_SUPERUSER_EMAIL=""
+ARG DJANGO_SUPERUSER_PASSWORD=""
 RUN python manage.py createsuperuser --noinput
 # collect the static files
 RUN python manage.py collectstatic --clear --noinput
