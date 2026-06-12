@@ -1,4 +1,6 @@
 import os
+import re
+from dataclasses import dataclass
 from time import time
 from itertools import chain
 from typing import List, Dict, Tuple, NamedTuple, Optional, Union, Iterable
@@ -23,47 +25,72 @@ def get_time_dirs(parent_dir: str) -> List[int]:
     return sorted([int(time_dir) for time_dir in os.listdir(parent_dir) if time_dir.isdigit()])
 
 
-def get_ufm_dirs(parent_dir: str) -> List[str]:
-    return [time_dir for time_dir in os.listdir(parent_dir) if time_dir.lower().startswith('ufm')]
+_ufm_dir_pats = [
+    r'ufm_(?P<label>((?P<letter>[mu])v(?P<number>\d*)(?P<suffix>(r.*|))))',
+    r'mfm_(?P<label>((?P<letter>l)\D*(?P<number>\d*)(?P<suffix>(r.*|))))',
+]
 
+@dataclass
+class UfmDir:
+    """Class representing a directory of files for a specific UFM (or
+    multi-wafer MFM for the case of LF band). Also helps with
+    extracting the "letter", "number", and "label", for database
+    purposes.
 
-def parse_ufm_name(ufm_dir: str) -> Tuple[str, int, str]:
-    """
-    Parses the UFM directory name and extracts substrings.
+    Pass a directory name to UfmDir.from_path to create a UfmDir
+    object.  The stream_id will be set based on the right-most portion
+    of the path, and analyzed to obtain UFM letter, number and label.
 
-    Args:
-        ufm_dir (str): The directory name in the format "ufm_{ufm_letter}v{ufm_number}".
+    Consider these stream_id values:
+
         Example 1: "ufm_mv12"
         Example 2: "ufm_mv51r1"
-        Example 3: "ufm_19"
+        Example 3: "ufm_uv6"
+        Example 4: "mfm_lot1"
+        Example 5: "mfm_lst1"
+        Example 6: "ufm_19"
+        Example 7: "invalid-label"
 
-    Returns:
-        Tuple[str, int, str]: A tuple containing the ufm letter, ufm number as an int,
-        and the formatted ufm label (which can retain non-numeric characters). If parsing
-        fails, returns the input directory in the str fields and 0 for the ufm number.
+    The extracted values for "letter", "number", and "label" will be:
+
         Example 1: ["m", 12, "Mv12"]
         Example 2: ["m", 51, "Mv51r1"]
-        Example 3: ["ufm_19", 0, "ufm_19"]
+        Example 3: ["u", 6, "Uv6"]
+        Example 4: ["l", 1, "Lot1"]
+        Example 5: ["l", 1, "Lst1"]
+        Example 6: [None, None, None]
+        Example 7: [None, None, None]
+
     """
-    try:
-        ufm_dir = ufm_dir.lower().strip()
-        _, dir_info = ufm_dir.split('_')
-        ufm_letter, ufm_number = dir_info.split('v')
-    except ValueError:
-        return '?', 0, ufm_dir
-    
-    ufm_label = f'{ufm_letter.upper()}v{ufm_number}'
 
-    # Handle cases where a directory name contains non-numeric characters after the ufm
-    # number (e.g. the numeric prefix is "51" for directory "ufm_mv51r1"). If the numeric
-    # prefix is empty (i.e. the directory name has no numeric characters), set number to 0.
-    number_prefix = ufm_number[:len(ufm_number)-len(ufm_number.lstrip('0123456789'))]
-    if len(number_prefix) == 0:
-        ufm_number = 0
-    else:
-        ufm_number = int(number_prefix)
+    full_path: str
+    stream_id: str
+    ufm_valid: bool
 
-    return ufm_letter, ufm_number, ufm_label
+    letter: str = None
+    number: int = None
+    label: str = None
+
+    @classmethod
+    def _from_re(cls, m, **kw):
+        d = m.groupdict()
+        return cls(letter=d['letter'],
+                   number=int(d['number']),
+                   label=d['label'].capitalize(),
+                   **kw)
+
+    @classmethod
+    def from_path(cls, path):
+        stream_id = os.path.basename(path)
+        for p in _ufm_dir_pats:
+            if (m := re.match(p, stream_id)):
+                return cls._from_re(m, full_path=path, stream_id=stream_id, ufm_valid=True)
+        return cls(full_path=path, stream_id=stream_id, ufm_valid=False)
+
+
+def get_ufm_dirs(parent_dir, verbose=False) -> List[UfmDir]:
+    return [UfmDir.from_path(os.path.join(parent_dir, d))
+            for d in os.listdir(parent_dir)]
 
 
 def parse_action_name(action_dir: str) -> Tuple[Union[int, None], Union[str, None]]:
@@ -142,11 +169,13 @@ def smurf(timestamp_min: int, timestamp_max: int, smurf_data_path: str, platform
             # the data is outside the requested time range
             continue
         full_path_coarse_time_dir = os.path.join(smurf_data_path, str(coarse_time_int))
-        for stream_id in get_ufm_dirs(parent_dir=full_path_coarse_time_dir):
-            ufm_letter, ufm_number, ufm_label = parse_ufm_name(stream_id)
-            full_path_ufm_dir = os.path.join(full_path_coarse_time_dir, stream_id)
-            for action_dir in os.listdir(full_path_ufm_dir):
-                full_path_action_dir = os.path.join(full_path_ufm_dir, action_dir)
+        for ufm_dir in get_ufm_dirs(parent_dir=full_path_coarse_time_dir):
+            if not ufm_dir.ufm_valid:
+                if verbose:
+                    print(f"    Ignoring {ufm_dir.full_path} -- not valid UFM format.")
+                continue
+            for action_dir in os.listdir(ufm_dir.full_path):
+                full_path_action_dir = os.path.join(ufm_dir.full_path, action_dir)
                 timestamp_int, action_type = parse_action_name(action_dir)
                 if timestamp_int is None or action_type is None:
                     # This catches dirnames of the forms
@@ -177,12 +206,12 @@ def smurf(timestamp_min: int, timestamp_max: int, smurf_data_path: str, platform
                 yield SmurfDataLocation(
                     timestamp_coarse=coarse_time_int,
                     timestamp=timestamp_int,
-                    ufm_letter=ufm_letter,
-                    ufm_number=ufm_number,
+                    ufm_letter=ufm_dir.letter,
+                    ufm_number=ufm_dir.number,
                     action_type=action_type,
                     path=path_formatted,
-                    ufm_label=ufm_label,
-                    stream_id=stream_id,
+                    ufm_label=ufm_dir.label,
+                    stream_id=ufm_dir.stream_id,
                     platform=platform,
                     scan_timestamp=scan_timestamp,
                     outputs=data_files_by_type['outputs'],
