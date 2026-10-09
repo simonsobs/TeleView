@@ -7,6 +7,7 @@ urlpatterns = [
     path('sched_status/', views.sched_status_view, name='sched-status-view'),
     re_path(r'^post_status/.*$', views.post_status_view, name='post-status-view'),
     re_path(r'^full_reset/.*$', views.full_reset_view, name='full-reset-view'),
+    re_path(r'^reset_api_status/.*$', views.reset_api_status, name='reset-api-status'),
     re_path(r'^set_running_ready/.*$', views.set_running_as_ready, name='set-running-ready-view'),
     re_path(r'^set_running_off/.*$', views.set_running_off_view, name='set-running-off-view'),
     re_path(r'^queue_full_reset/.*$', views.queue_full_reset_view, name='queue-full-reset-view'),

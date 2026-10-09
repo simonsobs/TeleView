@@ -35,6 +35,10 @@
                         <strong>full_reset</strong>—Fully reset the database, resetting both the data and indexing.
                     </a></li>
 
+                    <li><a href="{% url 'reset-api-status' %}" title="reset-api-status is the equivalent of clearing the Queue, resetting all scan/action statues, and toggling the queue advance status from off and back to ready.">
+                        <strong>reset_api_status</strong>—Reset the queue / scheduler in case it is locked up after a tvapi interruption.
+                    </a></li>
+
                     <li><a href="{% url 'queue-update-view' %}" title="update the existing database using a non-destructive process. This process scans the entire file-system and updates the database maintaining previously found data such that it is still available during the update.">
                         <strong>update</strong>—Update the database with a full file system scan.
                     </a></li>
