@@ -123,6 +123,15 @@ def set_running_off_view(request):
     return set_schedule_var(var_name='running', status="off", task='user_override')
 
 
+def reset_api_status(request):
+    """Catch-all reset that includes clearing queued items, clearing
+    statuses of items, and resetting the "Running" business."""
+    delete_queue_view(request)
+    delete_status_view(request)
+    set_running_off_view(request)
+    return set_running_as_ready(request)
+
+
 def delete_queue_view(request):
     return delete_queue()
 
