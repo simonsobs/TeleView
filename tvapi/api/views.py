@@ -25,18 +25,23 @@ class HomeView(TemplateView):
         return self.render_to_response(context)
 
 
-def get_running_view(request):
+def sched_status_view(request):
+    """
+    Provide misc queue and task info for the html API page.
+    """
+    # Get everything the api window needs.
+    result = {}
+
+    #def get_running_view(request):
     schedule_vars = get_schedule_vars()
-    return JsonResponse(schedule_vars['running'], safe=False)
+    result['running'] = schedule_vars['running']
 
-
-def get_queue_view(request):
+    #def get_queue_view(request):
     data = get_query_with_timestamps()
     return_list = [{'task': task, 'timestamp': iso_stamp} for task, iso_stamp in data.items()]
-    return JsonResponse(return_list, safe=False)
+    result['queue'] = return_list
 
-
-def get_status(request):
+    # def get_status(request):
     data = list(StatusModel.objects.values())
     completed_tasks = []
     incomplete_tasks = []
@@ -47,7 +52,9 @@ def get_status(request):
             incomplete_tasks.append(single_status)
     sorted_tasks = sorted(incomplete_tasks, key=itemgetter('percent_complete', 'timestamp'))
     sorted_tasks.extend(sorted(completed_tasks, key=itemgetter('timestamp'), reverse=True))
-    return JsonResponse(sorted_tasks, safe=False)
+    result['status'] = sorted_tasks
+
+    return JsonResponse(result, safe=False)
 
 
 def test_status(request):
