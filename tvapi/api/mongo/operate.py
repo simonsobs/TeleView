@@ -1,7 +1,7 @@
 import datetime
 from typing import Optional, Dict, Union
 
-from pymongo import ReturnDocument
+from pymongo import ReturnDocument, ReplaceOne
 
 from api.mongo.connect import MongoConnection
 
@@ -65,6 +65,33 @@ class MongoOperate(MongoConnection):
         self.select(collection_name=collection_name, database_name=database_name)
         collection = self.get_collection()
         collection.update_one(filter=doc_filter, update={"$set": update_map}, upsert=True)
+
+    def update_or_insert_batcher(self, collection_name: Optional[str] = None, database_name: Optional[str] = None,
+                                 batch_size: Optional[int] = 1000):
+        """Opens a context that batches Replace(upsert) database ops in groups of batch_size. Use like this:
+
+          with mongo.update_or_insert_batcher() as batcher:
+            for filt, doc in source:
+              batcher.post(filt, doc)
+
+        """
+        self.select(collection_name=collection_name, database_name=database_name)
+        collection = self.get_collection()
+        class Batcher:
+            def __enter__(self):
+                self.items = []
+                return self
+            def __exit__(self, exc_type, exc_value, exc_traceback):
+                self.check_flush(force=True)
+            def check_flush(self, force=False):
+                if (force and len(self.items) > 0) or (len(self.items) >= batch_size):
+                    ops = [ReplaceOne(filt, data, upsert=True) for (filt, data) in self.items]
+                    collection.bulk_write(ops, ordered=False)
+                    self.items = []
+            def post(self, unique_index, document):
+                self.items.append((unique_index, document))
+                self.check_flush()
+        return Batcher()
 
     def get_max_value(self, field_name: str, collection_name: Optional[str] = None,
                       database_name: Optional[str] = None) -> Union[float, None]:
