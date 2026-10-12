@@ -160,8 +160,11 @@ class DatabaseEvent:
                                  timestamp_min=self.timestamp_min, timestamp_max=self.timestamp_max)
         if collection_name not in all_data.keys():
             raise ValueError(f'collection_name ({collection_name}) not found in all_data.keys()')
-        with MongoOperate(verbose=self.verbose, database_name_to_select='files',
-                          collection_name_to_select=collection_name) as mongo:
+
+        t0, record_count = time(), 0
+        with (MongoOperate(verbose=self.verbose, database_name_to_select='files',
+                          collection_name_to_select=collection_name) as mongo, \
+              mongo.update_or_insert_batcher() as batcher):
             status_type = f'scan_{collection_name}'
             self.send_status(status_type=status_type, is_complete=False, timestamp_coarse=None)
             scan_timestamp_min = float('inf')
@@ -175,10 +178,14 @@ class DatabaseEvent:
                     'action_type': record.action_type,
                     'timestamp': record.timestamp,
                 }
-                mongo.update_or_insert_one(doc_filter=unique_index, update_map=document)
+                batcher.post(unique_index, document)
                 self.send_status(status_type=status_type, timestamp_coarse=record.timestamp_coarse)
+                record_count += 1
             set_min_timestamp_for_scan_smurf(scan_timestamp_min=scan_timestamp_min)
             self.send_status(status_type=status_type, is_complete=True)
+        if self.verbose:
+            t0 = time() - t0
+            print('created/updated %i records in %.1f s = %.1f recs/sec' % (record_count, t0, record_count / t0))
 
     def upload_data(self):
         self.smurf_reset_collection()
